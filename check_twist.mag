@@ -1,5 +1,7 @@
 load "torsion-order.mag";
 load "bound.mag";
+// given a curve defined by an equation in which all monomials have even
+// degree in variable number var, construct the quadratic twist by t
 function twist(c,var,t)
   if IsSquare(t) then return c; end if;
   qft := QuadraticField(t);
@@ -10,6 +12,7 @@ function twist(c,var,t)
   return tw;
 end function;
 
+// given a curve as above, check twists up to a given bound
 function check_twists(c,var,t,bdp:lbd_t := false)
   if lbd_t cmpeq false then lbd_t := -t; end if;
   for n in [lbd_t..t] do
