@@ -1,8 +1,12 @@
+// work out the E_k classes on a curve, defined as the sums of all points
+// over F_{p^k} in the class group
 function ek_class(c: bd := -1, verbose := false)
   F := BaseField(c);
   g := Genus(c);
   if bd eq -1 then bd := g; end if;
+  // identity and Frobenius
   frobs := [map<c->c|[(c.i)^(#F^j): i in [1..Rank(CoordinateRing(AmbientSpace(c)))]]>: j in [0..1]];
+  // all needed powers of Frobenius
   frobs cat:= [frobs[2]^i: i in [2..bd-1]];
   cl,clto := ClassGroup(c);
   classes := [];
@@ -11,8 +15,13 @@ function ek_class(c: bd := -1, verbose := false)
     // surprisingly slow: pls := Places(c,i);
     if verbose then printf "listing points over degree-%o extension\n", i; end if;
     pts_to_i := {@x: x in RationalPoints(c,Fi)@};
+    // points whose minimal field of definition is F_{p^i}
     pts_deg_i := {@x: x in pts_to_i|Fi eq sub<Fi|Eltseq(x)>@};
-    // seems inefficient but maybe isn't; loop overhead?
+    // it seems like it should be faster to write code that extracts the
+    // orbits one at a time rather than creating the orbit of every point
+    // separately, since this creates every order-n orbit n times.
+    // However, that doesn't seem to be true; apparently the overhead of
+    // the loop and the set manipulation is a serious issue.
     if verbose then "making orbits"; end if;
     orbs := {@{@f(i): f in frobs@}: i in pts_deg_i@};
     /*while #pts_deg_i gt 0 do
@@ -27,6 +36,11 @@ function ek_class(c: bd := -1, verbose := false)
     pls := [Place(Rep(i)): i in orbs];
     newcl := cl!0;
     if verbose then printf "working out the sum "; end if;
+    // Just adding them all at once is equivalent to this but inefficient.
+    // I think the reason is that divisors of large degree need to be reduced
+    // to a standard form, and doing that piecemeal is faster than all at
+    // once.  But a real understanding of what's going on is buried in the
+    // internals of Magma.
     if #pls gt 0 then
       for i in [0..(#pls-1) div 100] do
         newcl +:= (&+pls[i*100+1..Min(#pls,100*(i+1))])@@clto;
@@ -41,6 +55,10 @@ function ek_class(c: bd := -1, verbose := false)
   return classes;
 end function;
 
+// work out the E_k classes from the above function for primes in a given
+// range, and take the LCM to get the desired lower bound on torsion order.
+// We may have worked out an upper bound previously, in which case
+// we stop as soon as we know that the two are inconsistent.
 function check_c(c,pbd: lbd := 1, verbose := false, goal := 0)
   lcm := 1;
   ords := [];
@@ -50,9 +68,13 @@ function check_c(c,pbd: lbd := 1, verbose := false, goal := 0)
     cp := ChangeRing(c,GF(p));
     if IsNonsingular(cp) then
       cl := ek_class(cp);
+      // we have all the classes we will look at
+      // now find the group they generate
       scl := sub<Universe(cl)|cl>;
       if verbose then <p,Invariants(scl)>; end if;
+      // our new bound is the largest order of a linear combination of the E_k.
       Append(~ords,<p,Exponent(TorsionSubgroup(scl))>);
+      // of course this information gets combined with what we already knew.
       lcm := LCM(lcm,ords[#ords,2]);
       if not IsDivisibleBy(goal,lcm) then return ords; end if;
     end if;
@@ -93,16 +115,19 @@ function check_invs(q,n,p:bd := 4,n_p := 2)
   P2F := ProjectiveSpace(F,2);
   ls4 := LinearSystem(P2F,4);
   i := 1;
+  // find a random smooth curve over F_q ...
   while i le n do
     repeat
       repeat c := Curve(P2F,Random(ls4));
       until IsReduced(c) and #PrimeComponents(c) eq 1 and Genus(c) eq 3;
       cl,clto := ClassGroup(c);
       icl := Invariants(cl);
+      // ... whose class group contains (Z/pZ)^n_p ...
     until #[i: i in icl|i ne 0 and i mod p eq 0] eq n_p;
     "Picard group: ", icl;
     scl := ek_class(c:bd := bd);
     gp := sub<cl|scl>;
+    // ... and determine how many E_k we need to find the full shadow
     needed := rep{r: r in [1..#scl]|gp eq sub<cl|scl[1..r]>};
     gpi := Invariants(gp);
     Append(~gps,<gpi,icl,c>);

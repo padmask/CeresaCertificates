@@ -1,5 +1,6 @@
 load "torsion-order.mag";
 load "bound.mag";
+// coefficients of quartic curves
 load "curves-ht-1.mag";
 
 // space for Dixmier-Ohno invariants
@@ -8,6 +9,7 @@ Pw := ProjectiveSpace(Q,wts);
 
 P2 := ProjectiveSpace(Q,2);
 ls4 := LinearSystem(P2,4);
+// convert sequences of coefficients from curves-ht-1.mag into curves
 cs := [Curve(P2,p(Domain(p)!i)): i in coefs] where p is PolynomialMap(ls4);
 
 // those not shown to have nontorsion Ceresa cycle by reducing mod
@@ -16,15 +18,16 @@ survivors := [ 1, 4575, 8874, 42902, 45312, 45320, 46539, 65592, 77220, 128136, 
 
 thecs := [cs[i]: i in survivors];
 
+// create upper bounds for the automorphism group by reducing mod p
 ordps := [];
 for i in thecs do
   Append(~ordps,[#AutomorphismGroup(ChangeRing(i,GF(p))): p in PrimesUpTo(30)|IsNonsingular(ChangeRing(i,GF(p)))]);
   printf ".";
 end for;
 
-// upper bounds for the automorphism group
 bds := [GCD(i): i in ordps];
 
+// look for automorphisms of curves from small elements of GL_3(Z)
 gl := GL(3,Z);
 glgens := {@gl.i^j: j in [0,1,-1], i in [1..Ngens(gl)]@};
 glelts := glgens;
@@ -46,7 +49,8 @@ for i in [1..3] do
   end if;
 end for;
 
-// sorry, doing this by hand
+// sorry, doing this by hand (there is one example where there is an
+// automorphism not covered by the elements of GL_3 above)
 assert bds[16] eq 4 and #found_auts[16] eq 2;
 found_auts[16] := {@map<P2->P2|i>: i in [[P2.1,P2.2,P2.3],[P2.1,P2.3,P2.2],[P2.2+P2.3,2*P2.1+P2.2-P2.3,2*P2.1-P2.2+P2.3],[P2.2+P2.3,2*P2.1-P2.2+P2.3,2*P2.1+P2.2-P2.3]]@};
 
@@ -142,7 +146,8 @@ r7<p7> := sub<c7|z7+1/z7>;
 autr7 := Automorphisms(r7);
 mo := MaximalOrder(r7);
 P2r7 := ChangeRing(P2,r7);
-// nothing up my sleeve
+// most linear forms will work; just take coefficients from the initial
+// digits of pi to show that there is nothing up my sleeve
 lfs := [a(mo![3,1,4])*P2r7.1+a(mo![1,5,9])*P2r7.2+a(mo![2,6,5])*P2r7.3: a in autr7];
 
 thes3 := {@Automorphism(P2,PermutationMatrix(Q,i)): i in SymmetricGroup(3)@};
@@ -204,11 +209,22 @@ for i in [1..#ord24] do
 end for;
 assert good24 eq [];
 
+// now we sort through the Dixmier-Ohno invariants to determine the
+// number of distinct C-isomorphism classes
 all_good := Sort(&cat [good1,good2,good4,good6,good8,good24]);
 all_bad := [x: x in [1..#survivors]|x notin all_good];
 doi_good := [DixmierOhnoInvariants(thecs[i]): i in all_good];
 doi_bad := [DixmierOhnoInvariants(thecs[i]): i in all_bad];
 
+// unfortunately Magma doesn't like points in weighted projective spaces
+// for which all weight-1 coordinates are 0.
+
+// The slightly tricky point here is that if all the nonzero coordinates
+// have weight divisible by d, then you can rescale the d away and so
+// the points can be the same over Q without the ratio of the given
+// coordinates being a rational dth power (e.g., in P(1,1,2,2), the
+// points (0:0:1:1) and (0:0:2:2) are the same, but there is of course
+// no rational number t such that (0:0:2:2) = (t*0:t*0:t^2*1:t^2*1)).
 function same_doi(i1,i2)
   inds := [x: x in [1..13]|i1[x] ne 0];
   if inds ne [x: x in [1..13]|i2[x] ne 0] then

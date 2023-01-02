@@ -1,3 +1,5 @@
+// painful attempt to find a formula in terms of the coefficients; the
+// computation is so fast that it isn't necessary to do this
 /*procedure generic(~formula)
   Q4<a,b,c,t> := FunctionField(Q,4);
   Q4u<u> := PolynomialRing(Q4);
@@ -13,7 +15,12 @@
   // sym_coefs := [sfa!i: i in coefs];
 end procedure;*/
 
+// the basic upper bound (see slides and future paper).
+// We find the roots of the polynomial, presumably
+// the numerator of the zeta function, and then find the products of sets
+// of 3 roots that are not of the form r1, p/r1, r2.
 function easy_bound(pol)
+  // make sure conventions are consistent
   if LeadingCoefficient(pol) ne 1 then pol := Reverse(pol); end if;
   sf := SplittingField(pol);
   rts := [x[1]: i in [1..x[2]], x in Roots(pol,sf)];
@@ -26,6 +33,7 @@ function easy_bound(pol)
   return bd;
 end function;
 
+// compute the bound for the reduction of a curve mod p
 function bound(c,p)
   cp := ChangeRing(c,GF(p));
   if IsSingular(cp) then return 0; end if;
@@ -33,6 +41,9 @@ function bound(c,p)
   return easy_bound(zf);
 end function;
 
+// compute the bound for all primes up to a given value
+// it's easy enough to adapt this to, e.g., primes that split in a given
+// extension, to deal with twists, for example
 function bound_to(c,b)
   bd := 0;
   for p in PrimesUpTo(b) do
