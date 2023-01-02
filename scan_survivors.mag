@@ -1,0 +1,251 @@
+load "torsion-order.mag";
+load "bound.mag";
+load "curves-ht-1.mag";
+
+// space for Dixmier-Ohno invariants
+wts := [1,2,3,3,4,4,5,5,6,6,7,7,9];
+Pw := ProjectiveSpace(Q,wts);
+
+P2 := ProjectiveSpace(Q,2);
+ls4 := LinearSystem(P2,4);
+cs := [Curve(P2,p(Domain(p)!i)): i in coefs] where p is PolynomialMap(ls4);
+
+// those not shown to have nontorsion Ceresa cycle by reducing mod
+// primes less than 50
+survivors := [ 1, 4575, 8874, 42902, 45312, 45320, 46539, 65592, 77220, 128136, 142594, 156913, 159006, 162397, 162421, 162435, 165748, 166727, 167619, 169949, 170041, 193665, 193666, 193795, 193804, 193918, 193919, 193954, 196337, 197007, 197008, 197035, 197125, 197126, 197252, 197253, 197285, 199555, 199796, 200384, 200385, 200413, 200486, 200584, 200585, 202587, 222394, 222396, 223825, 223928, 237130, 237131, 237206, 237275, 237276, 238042, 238569, 238570, 238626, 238627, 238689, 238690, 239887, 239888, 239943, 239996, 239997, 241355, 241445, 241519, 241548, 241552, 241556, 241559, 241564, 241568, 241570, 241572, 241573, 241574, 241575, 243991, 244305, 244321, 244326, 244327, 244329, 244330, 244332, 244333, 244336, 244340, 244341, 244342, 244818, 244869, 244870, 244909, 244910, 244912, 244913, 244925, 244926, 244928, 244929, 244931, 245375, 245419, 245447, 245456, 245457, 245459, 245740, 245743, 245746, 245787, 245790, 245964, 246026, 246030, 246032, 246035, 246038, 246041, 246043, 246044, 246045, 246046, 247210, 247212, 247213, 247222, 247229, 247230, 247231, 247260, 247261, 247263, 247264, 247267, 247269, 247271, 247693, 247713, 248155, 248179, 248190, 248192, 248194, 248196, 248198, 248199, 248421, 248423, 248425, 251890, 251904, 253547, 253665, 253807, 254648, 254844, 254876, 254902 ];
+
+thecs := [cs[i]: i in survivors];
+
+ordps := [];
+for i in thecs do
+  Append(~ordps,[#AutomorphismGroup(ChangeRing(i,GF(p))): p in PrimesUpTo(30)|IsNonsingular(ChangeRing(i,GF(p)))]);
+  printf ".";
+end for;
+
+// upper bounds for the automorphism group
+bds := [GCD(i): i in ordps];
+
+gl := GL(3,Z);
+glgens := {@gl.i^j: j in [0,1,-1], i in [1..Ngens(gl)]@};
+glelts := glgens;
+for i in [1..4] do
+  glelts join:= {@x*y: x in glelts, y in glgens@};
+end for;
+auts := {@Automorphism(P2,i): i in glelts@};
+
+found_auts := [{@x: x in auts|c@@x eq c@}: c in thecs];
+
+for i in [1..4] do
+  glelts join:= {@x*y: x in glelts, y in glgens@};
+end for;
+auts2 := [Automorphism(P2,i): i in glelts];
+
+for i in [1..3] do
+  if bds[i] ne #found_auts[i] then
+    found_auts[i] := {@x: x in auts2|thecs[i]@@x eq thecs[i]@};
+  end if;
+end for;
+
+// sorry, doing this by hand
+assert bds[16] eq 4 and #found_auts[16] eq 2;
+found_auts[16] := {@map<P2->P2|i>: i in [[P2.1,P2.2,P2.3],[P2.1,P2.3,P2.2],[P2.2+P2.3,2*P2.1+P2.2-P2.3,2*P2.1-P2.2+P2.3],[P2.2+P2.3,2*P2.1-P2.2+P2.3,2*P2.1+P2.2-P2.3]]@};
+
+assert [i: i in [1..#thecs]|bds[i] ne #found_auts[i]] eq [134,135,140,164];
+// one can check that they are 3 forms of the Lilienfeldt-Shnidman curve
+// and one of the Fermat curve.  So in both cases we know what's going on.
+
+ord1 := [x: x in [1..#thecs]|#found_auts[x] eq 1];
+// Now we examine the curves with trivial automorphism group over Q,
+// all of which have only terms of degree 0 and 3 in z.
+// So we can twist them by replacing z^3 by cz^3 for any rational c.
+// In no case does this have any effect.
+assert forall{m: m in Monomials(DefiningPolynomial(thecs[c])), c in ord1|Degree(m,3) in [0,3]};
+// no point twisting by -1, which is a cube
+cubf := [x: x in [1..10]|forall{i: i in Factorization(x)|i[2] le 2}];
+
+good1 := [];
+for i in [1..#ord1] do
+  "starting curve", i;
+  c := ord1[i];
+  for t in cubf do
+    "twisting by", t;
+    qt := Curve(P2,&+[m*t^(Degree(m,3) div 3)*MonomialCoefficient(d,m): m in Monomials(d)]) where d is DefiningPolynomial(c);
+    bd := 2*bound_to(qt,30);
+    ords := check_c(qt,30:goal := bd,verbose); // this should not have been c
+    max := LCM([x[2]: x in ords]);
+    "order for twist divides", bd, "and is a multiple of", max;
+    if not IsDivisibleBy(bd,max) then
+      "Ceresa class is not torsion";
+      continue i;
+    end if;
+  end for;
+  "torsion Ceresa class not excluded";
+  Append(~good1,i);
+end for;
+// everything survives
+assert good1 eq ord1;
+
+ord2 := [x: x in [1..#thecs]|#found_auts[x] eq 2];
+// next automorphism group 2.
+// This time the twists have much greater impact.
+chs := [];
+for i in [1..#ord2] do
+  // start by changing coordinates so that the automorphism is
+  // (x:y:z) -> (x:y:-z), to make the twisting easy
+  auti := found_auts[i,2];
+  esp := [Basis(Kernel(Matrix(auti)-e)): e in [1,-1]];
+  // dimensions will be 1 and 2
+  Sort(~esp,func<x,y|#y-#x>);
+  assert [#i: i in esp] eq [2,1];
+  autp2 := map<P2->P2|[&+[v[i]*P2.i: i in [1..3]]: v in &cat esp]>;
+  newc := thecs[i]@@Inverse(autp2);
+  _ := map<newc->newc|[P2.1,P2.2,-P2.3]>;
+  Append(~chs,newc);
+end for;
+
+sqf := [x: x in [-10..10]|x ne 0 and IsSquarefree(x)];
+Sort(~sqf,func<x,y|AbsoluteValue(y)-AbsoluteValue(x)>);
+fail := []; good2 := [];
+for i in [1..#chs] do
+  "starting curve", i;
+  c := ord2[i];
+  for t in sqf do
+    "twisting by", t;
+    qt := Curve(P2,&+[m*t^(Degree(m,3) div 2)*MonomialCoefficient(d,m): m in Monomials(d)]) where d is DefiningPolynomial(c);
+    bd := 2*bound_to(qt,30);
+    ords := check_c(qt,30:goal := bd,verbose); // used to be c oops
+    max := LCM([x[2]: x in ords]);
+    "order for twist divides", bd, "and is a multiple of", max;
+    if not IsDivisibleBy(bd,max) then
+      "Ceresa class is not torsion";
+      Append(~fail,<i,t>);
+      continue i;
+    end if;
+  end for;
+  "torsion Ceresa class not excluded";
+  Append(~good2,ord2[i]);
+end for;
+assert good2 eq [25, 29, 38, 39, 46, 132, 134, 135, 164];
+
+// for order 4, we can never do anything, except for the special one
+// which is a form of the Fermat curve.
+ord4 := [x: x in [1..#thecs]|#found_auts[x] eq 4];
+fermat := Curve(P2,&+[P2.i^4: i in [1..3]]);
+doi_fermat := Pw!DixmierOhnoInvariants(fermat);
+special4 := rep{x: x in ord4|(d[1] ne 0 and Pw!d eq doi_fermat) where d is DixmierOhnoInvariants(thecs[x])};
+good4 := Exclude(ord4,special4);
+
+// for order 6, we can always dispose of them by passing to a suitable
+// form over a cubic extension.
+c7<z7> := CyclotomicField(7);
+r7<p7> := sub<c7|z7+1/z7>;
+autr7 := Automorphisms(r7);
+mo := MaximalOrder(r7);
+P2r7 := ChangeRing(P2,r7);
+// nothing up my sleeve
+lfs := [a(mo![3,1,4])*P2r7.1+a(mo![1,5,9])*P2r7.2+a(mo![2,6,5])*P2r7.3: a in autr7];
+
+thes3 := {@Automorphism(P2,PermutationMatrix(Q,i)): i in SymmetricGroup(3)@};
+signs := {@map<P2->P2|[i in s select -P2.i else P2.i: i in [1..3]]>: s in Subsets({1..3})@};
+
+ord6 := [x: x in [1..#thecs]|#found_auts[x] eq 6];
+// luckily it's always permutations, at least up to sign.
+chs := [rep{thecs[i]@@s: s in signs|forall{t: t in thes3|(thecs[i]@@s)@@t eq thecs[i]@@s}}: i in ord6];
+twists := [Curve(P2,Evaluate(DefiningPolynomial(c),lfs)): c in chs];
+// and these twists will not work.
+good6 := [];
+
+for i in [1..#ord6] do
+  "starting curve", i;
+  c := twists[i];
+  bd := 2*bound_to(c,30);
+  ords := check_c(c,30:goal := bd,verbose);
+  max := LCM([x[2]: x in ords]);
+  "order divides", bd, "and is a multiple of", max;
+  if not IsDivisibleBy(bd,max) then
+    "Ceresa class is not torsion";
+  else
+    "torsion Ceresa class not excluded";
+    Append(~good6,i);
+  end if;
+end for;
+assert good6 eq [];
+
+// now 8
+ord8 := [x: x in [1..#thecs]|#found_auts[x] eq 8];
+special8 := rep{x: x in ord8|(d[1] ne 0 and Pw!d eq doi_fermat) where d is DixmierOhnoInvariants(thecs[x])};
+good8 := Exclude(ord8,special8);
+// we can't do anything with any of the others that I can see, except for
+// one which will later turn out to have a form with full S_4 action.
+// I don't think that can help with any others.
+
+// 24 is like 6.
+ord24 := [x: x in [1..#thecs]|#found_auts[x] eq 24];
+// luckily it's always permutations, at least up to sign.
+chs := [rep{thecs[i]@@s: s in signs|forall{t: t in thes3|(thecs[i]@@s)@@t eq thecs[i]@@s}}: i in ord24];
+// nothing up my sleeve
+twists := [Curve(P2,Evaluate(DefiningPolynomial(c),lfs)): c in chs];
+// and these twists will not work.
+good24 := [];
+
+for i in [1..#ord24] do
+  "starting curve", i;
+  c := twists[i];
+  bd := 2*bound_to(c,30);
+  ords := check_c(c,30:goal := bd,verbose);
+  max := LCM([x[2]: x in ords]);
+  "order divides", bd, "and is a multiple of", max;
+  if not IsDivisibleBy(bd,max) then
+    "Ceresa class is not torsion";
+  else
+    "torsion Ceresa class not excluded";
+    Append(~good24,i);
+  end if;
+end for;
+assert good24 eq [];
+
+all_good := Sort(&cat [good1,good2,good4,good6,good8,good24]);
+all_bad := [x: x in [1..#survivors]|x notin all_good];
+doi_good := [DixmierOhnoInvariants(thecs[i]): i in all_good];
+doi_bad := [DixmierOhnoInvariants(thecs[i]): i in all_bad];
+
+function same_doi(i1,i2)
+  inds := [x: x in [1..13]|i1[x] ne 0];
+  if inds ne [x: x in [1..13]|i2[x] ne 0] then
+    return false;
+  end if;
+
+  nonzero_wts := [wts[i]: i in inds];
+  nonzero_wts := [Z|x/GCD(nonzero_wts): x in nonzero_wts];
+  isp,pow := IsPower(i1[inds[1]]/i2[inds[1]],nonzero_wts[1]);
+  if isp then
+    if i1 eq [i2[i]*pow^(i in inds select nonzero_wts[Index(inds,i)] else 0): i in [1..13]] then return true;
+    elif IsEven(nonzero_wts[1]) and i1 eq [i2[i]*(-pow)^(i in inds select nonzero_wts[Index(inds,i)] else 0): i in [1..13]] then return true;
+    end if;
+  end if;
+  return false;
+end function;
+
+// if we have two possibly torsion curves with the same Dixmier-Ohno
+// invariants, we shouldn't count them separately
+gr_same_good := Graph<{1..#all_good}|{{i,j}: i,j in [1..#all_good]|i lt j and same_doi(doi_good[i],doi_good[j])}>;
+// nor should we count ones that look torsion but aren't because they have
+// the same D-O invariants as one that doesn't.
+good_bad := {<x,y>: x in [1..#doi_good], y in [1..#doi_bad]|same_doi(doi_good[x],doi_bad[y])};
+
+assert #all_good eq 112;
+assert #good_bad eq 1;
+
+cc := [x: x in ConnectedComponents(gr_same_good)|forall{t: t in good_bad|VertexSet(gr_same_good)!t[1] notin x}];
+assert #cc eq 55;
+assert {*#{c: c in ConnectedComponents(gr_same_good)|exists{t: t in good_bad|VertexSet(gr_same_good)!t[1] in x}}*} eq {*1*};
+
+// most of the 55 connected components consist of 2 curves of automorphism
+// group of order 4, related by an automorphism of P^2(Q(i)) of the form
+// (x:y:z) -> (x:y:iz), i.e., changing the sign of the coefficients of
+// monomials of degree 2 in z.  But there are other types as well.
+
+// how many distinct C-isomorphism classes for the 164?
+doi_all := [DixmierOhnoInvariants(c): c in thecs];
+gr_same_good := Graph<{1..#thecs}|{{i,j}: i,j in [1..#thecs]|i lt j and same_doi(doi_all[i],doi_all[j])}>;
+assert #ConnectedComponents(gr_same_good) eq 102;

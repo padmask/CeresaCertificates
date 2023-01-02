@@ -1,0 +1,45 @@
+/*procedure generic(~formula)
+  Q4<a,b,c,t> := FunctionField(Q,4);
+  Q4u<u> := PolynomialRing(Q4);
+  pol := Q4u![t^3,t^2*a,t*b,c,b,a,1];
+
+  Q6 := FunctionField(Q,6);
+  genpol := Polynomial(Append([Q6.i: i in [1..6]],1));
+  sym3s := [&*[Q6.i: i in s]: s in Subsets({1..6},3)];
+  coefs := [&+[&*[sym3s[i]: i in s]: s in Subsets({1..20},n)]: n in [1..20]];
+  sym_pols := [Q6|x where _,x is IsSymmetric(i): i in coefs[1..10]];
+  flip_coefs := [Evaluate(i,[1/Q6.j: j in [1..6]])];
+  // sfa := SymmetricFunctionAlgebra(Q);
+  // sym_coefs := [sfa!i: i in coefs];
+end procedure;*/
+
+function easy_bound(pol)
+  if LeadingCoefficient(pol) ne 1 then pol := Reverse(pol); end if;
+  sf := SplittingField(pol);
+  rts := [x[1]: i in [1..x[2]], x in Roots(pol,sf)];
+  prod3 := {*&*[rts[i]: i in s]: s in Subsets({1..6},3)*};
+  _,q := IsPower(Coefficient(pol,0),3);
+  wedge := {*r*q: r in rts*};
+  assert wedge subset prod3;
+  eval_m := prod3 diff wedge;
+  bd := Z!&*[x-1: x in eval_m];
+  return bd;
+end function;
+
+function bound(c,p)
+  cp := ChangeRing(c,GF(p));
+  if IsSingular(cp) then return 0; end if;
+  zf := Numerator(ZetaFunction(cp));
+  return easy_bound(zf);
+end function;
+
+function bound_to(c,b)
+  bd := 0;
+  for p in PrimesUpTo(b) do
+    bd := GCD(bd,bound(c,p));
+    if bd eq &*[p^Valuation(bd,p): p in [2,3,5]] then return bd; end if;
+  end for;
+  return bd;
+end function;
+
+     

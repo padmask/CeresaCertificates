@@ -1,0 +1,29 @@
+load "torsion-order.mag";
+load "bound.mag";
+function twist(c,var,t)
+  if IsSquare(t) then return c; end if;
+  qft := QuadraticField(t);
+  cqft := ChangeRing(c,qft);
+  P2t := AmbientSpace(cqft);
+  tw_qft := Image(map<cqft->P2t|[P2t.i/(P2t.i eq CoordinateRing(P2t)!var select qft.1 else 1): i in [1..3]]>);
+  tw := Curve(AmbientSpace(c),d*LCM([Denominator(i): i in Coefficients(d)])) where d is DefiningPolynomial(tw_qft);
+  return tw;
+end function;
+
+function check_twists(c,var,t,bdp:lbd_t := false)
+  if lbd_t cmpeq false then lbd_t := -t; end if;
+  for n in [lbd_t..t] do
+    if n eq 0 or not IsSquarefree(n) then continue; end if;
+    tw := twist(c,var,n);
+    bd := 2*bound_to(tw,bdp);
+    ords := check_c(tw,bdp:goal := bd);
+    max := LCM([x[2]: x in ords]);
+    if IsDivisibleBy(bd,max) then
+      printf "consistent with torsion for twist by %o (bound %o, max order %o)\n", n, bd, max;
+    else
+      printf "failed at %o (bound %o, max order %o)\n", n, bd, max;
+      return false;
+    end if;
+  end for;
+  return true;
+end function;

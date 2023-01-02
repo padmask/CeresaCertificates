@@ -1,0 +1,113 @@
+function ek_class(c: bd := -1, verbose := false)
+  F := BaseField(c);
+  g := Genus(c);
+  if bd eq -1 then bd := g; end if;
+  frobs := [map<c->c|[(c.i)^(#F^j): i in [1..Rank(CoordinateRing(AmbientSpace(c)))]]>: j in [0..1]];
+  frobs cat:= [frobs[2]^i: i in [2..bd-1]];
+  cl,clto := ClassGroup(c);
+  classes := [];
+  for i in [1..bd] do
+    Fi := ext<F|i>;
+    // surprisingly slow: pls := Places(c,i);
+    if verbose then printf "listing points over degree-%o extension\n", i; end if;
+    pts_to_i := {@x: x in RationalPoints(c,Fi)@};
+    pts_deg_i := {@x: x in pts_to_i|Fi eq sub<Fi|Eltseq(x)>@};
+    // seems inefficient but maybe isn't; loop overhead?
+    if verbose then "making orbits"; end if;
+    orbs := {@{@f(i): f in frobs@}: i in pts_deg_i@};
+    /*while #pts_deg_i gt 0 do
+      apt := Rep(pts_deg_i);
+      orb := {@apt@};
+      for j in [1..i-1] do Include(~orb,frob(orb[j])); end for;
+      Include(~orbs,orb);
+      if #orbs mod 100 eq 0 then printf "."; end if;
+      pts_deg_i diff:= orb;
+    end while;*/
+    if verbose then "making places"; end if;
+    pls := [Place(Rep(i)): i in orbs];
+    newcl := cl!0;
+    if verbose then printf "working out the sum "; end if;
+    if #pls gt 0 then
+      for i in [0..(#pls-1) div 100] do
+        newcl +:= (&+pls[i*100+1..Min(#pls,100*(i+1))])@@clto;
+        if verbose then printf "."; end if;
+      end for;
+    end if;
+    // Append(~classes,&+[cl|i@@clto: i in pls]);
+    // Append(~classes,#pls eq 0 select cl!0 else (&+pls)@@clto);
+    Append(~classes,newcl);
+    if verbose then printf "\n"; end if;
+  end for;
+  return classes;
+end function;
+
+function check_c(c,pbd: lbd := 1, verbose := false, goal := 0)
+  lcm := 1;
+  ords := [];
+  for p in PrimesInInterval(lbd,pbd) do
+    if exists{i: i in Coefficients(DefiningPolynomial(c))|Valuation(i,p) lt 0} then continue; end if;
+    F := GF(p);                        
+    cp := ChangeRing(c,GF(p));
+    if IsNonsingular(cp) then
+      cl := ek_class(cp);
+      scl := sub<Universe(cl)|cl>;
+      if verbose then <p,Invariants(scl)>; end if;
+      Append(~ords,<p,Exponent(TorsionSubgroup(scl))>);
+      lcm := LCM(lcm,ords[#ords,2]);
+      if not IsDivisibleBy(goal,lcm) then return ords; end if;
+    end if;
+  end for;
+  return ords;
+end function;
+  
+// Fermat quartic: I conjecture that the group is Z + Z/2Z if p is 3 mod 8
+// and Z otherwise (verified up to 100).
+
+// Klein quartic: I conjecture that the group is of the form Z + Z/dZ, where
+// d divides p+1 (except that d = 2 for p = 2).  In particular we start with
+// (2,2), (3,4), (5,6), (11, 2), (13, 1), (17, 9), (19, 20), (23, 2),
+// (29, 1), (31, 2), (37, 1), (41, 1), (43, 1), (47, 8), (53, 1), (59, 12),
+// (61, 62), (67, 2), (71, 1), (73, 37), (79, 2), (83, 2), (89, 45), (97, 1).
+// It is a small amount of data, but at least it seems reasonable to hope
+// that d is unbounded.  Note: always 1 or 2 when p is +-1 mod 7.
+
+// Random quartics: very different.  In this case the d grows rapidly;
+// in one case, (3, 10), (5, 183), (7, 362), (11, 32), (13, 527), (17, 4330),
+// (19, 5906), (23, 3011), (29, 1388), (31, 12382), (37, 22330), (41, 74767)
+
+// This looks consistent with just choosing a random point on the Jacobian.
+
+// A quotient of the Fricke-Macbeath curve (see fricke-macbeath.mag):
+// (3, 36), (5, 18), (11, 36), (13, 2), (17, 9), (19, 4), (23, 36), (29, 2),
+// (31, 12), (37, 2), (41, 2), (43, 2), (47, 36), (53, 18), (59, 36), (61, 6),
+// (67, 12), (71, 2), (73, 1), (79, 12), (83, 2), (89, 9), (97, 2)
+
+// Conjecture: d | 36 with equality only if p is 11 mod 12?
+
+// For Picard curves, we get 0 for p = 1 mod 3 and d|2(p+1) if p = 2 mod 3.
+// Can this be explained by the correspondence?
+
+function check_invs(q,n,p:bd := 4,n_p := 2)
+  gps := [];
+  F := GF(q);
+  P2F := ProjectiveSpace(F,2);
+  ls4 := LinearSystem(P2F,4);
+  i := 1;
+  while i le n do
+    repeat
+      repeat c := Curve(P2F,Random(ls4));
+      until IsReduced(c) and #PrimeComponents(c) eq 1 and Genus(c) eq 3;
+      cl,clto := ClassGroup(c);
+      icl := Invariants(cl);
+    until #[i: i in icl|i ne 0 and i mod p eq 0] eq n_p;
+    "Picard group: ", icl;
+    scl := ek_class(c:bd := bd);
+    gp := sub<cl|scl>;
+    needed := rep{r: r in [1..#scl]|gp eq sub<cl|scl[1..r]>};
+    gpi := Invariants(gp);
+    Append(~gps,<gpi,icl,c>);
+    "Ceresa subgroup", gpi;
+    "highest degree needed", needed;
+  end while;
+  return gps;
+end function;
