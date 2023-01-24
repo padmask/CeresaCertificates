@@ -53,6 +53,7 @@ end for;
 // automorphism not covered by the elements of GL_3 above)
 assert bds[16] eq 4 and #found_auts[16] eq 2;
 found_auts[16] := {@map<P2->P2|i>: i in [[P2.1,P2.2,P2.3],[P2.1,P2.3,P2.2],[P2.2+P2.3,2*P2.1+P2.2-P2.3,2*P2.1-P2.2+P2.3],[P2.2+P2.3,2*P2.1-P2.2+P2.3,2*P2.1+P2.2-P2.3]]@};
+found_auts[21] := {@map<P2->P2|i>: i in [[P2.1,P2.2,P2.3],[P2.1,P2.3,P2.2],[P2.1,-2*P2.1-P2.3,-2*P2.1-P2.2],[P2.1,-2*P2.1-P2.2,-2*P2.1-P2.3]]@};
 
 assert [i: i in [1..#thecs]|bds[i] ne #found_auts[i]] eq [134,135,140,164];
 // one can check that they are 3 forms of the Lilienfeldt-Shnidman curve
