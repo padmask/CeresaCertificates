@@ -1,0 +1,18 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Magma scripts
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jordan
+    family-names: Ellenberg
+  - given-names: Adam
+    family-names: Logan
+  - given-names: Padmavathi
+    family-names: Srinivasan
+repository-code: 'https://github.com/padmask/CeresaCertificates'
+license: GPL-3.0+
