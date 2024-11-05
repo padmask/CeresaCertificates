@@ -59,6 +59,7 @@ end function;
 // range, and take the LCM to get the desired lower bound on torsion order.
 // We may have worked out an upper bound previously, in which case
 // we stop as soon as we know that the two are inconsistent.
+// Second return value: curve could still have torsion Ceresa.
 function check_c(c,pbd: lbd := 1, verbose := false, goal := 0)
   lcm := 1;
   ords := [];
@@ -67,21 +68,50 @@ function check_c(c,pbd: lbd := 1, verbose := false, goal := 0)
     F := GF(p);                        
     cp := ChangeRing(c,GF(p));
     if IsNonsingular(cp) then
-      cl := ek_class(cp);
+      cl := ek_class(cp:verbose := verbose);
       // we have all the classes we will look at
       // now find the group they generate
       scl := sub<Universe(cl)|cl>;
       if verbose then <p,Invariants(scl)>; end if;
       // our new bound is the largest order of a linear combination of the E_k.
-      Append(~ords,<p,Exponent(TorsionSubgroup(scl))>);
+      // changed from just e because Jordan and Padma realized that reducing the curve mod p doesn't give any p-adic information
+      Append(~ords,<p,e div p^Valuation(e,p)> where e is Exponent(TorsionSubgroup(scl)));
       // of course this information gets combined with what we already knew.
       lcm := LCM(lcm,ords[#ords,2]);
-      if not IsDivisibleBy(goal,lcm) then return ords; end if;
+      if not IsDivisibleBy(goal,lcm) then return ords, false; end if;
     end if;
   end for;
-  return ords;
+  return ords, true;
 end function;
   
+// same, but over a number field
+function check_c_nf(c,pbd: lbd := 1, verbose := false, goal := 0)
+  nf := FieldOfFractions(BaseRing(c));
+  lcm := 1;
+  ords := [];
+  for p in PrimesUpTo(pbd,nf) do
+    if Norm(p) lt lbd then continue; end if;
+    if exists{i: i in Coefficients(DefiningPolynomial(c))|Valuation(i,p) lt 0} then continue; end if;
+    qp,toqp := ResidueClassField(p);
+    P2qp := ProjectiveSpace(qp,2);
+    cp := Curve(P2qp,&+[rep{r: r in qp|Valuation(MonomialCoefficient(DefiningPolynomial(c),m)-r@@toqp,p) gt 0}*CoordinateRing(P2qp)!m: m in Monomials(DefiningPolynomial(c))]);
+    if IsNonsingular(cp) then
+      cl := ek_class(cp:verbose := verbose);
+      // we have all the classes we will look at
+      // now find the group they generate
+      scl := sub<Universe(cl)|cl>;
+      if verbose then <p,Invariants(scl)>; end if;
+      // our new bound is the largest order of a linear combination of the E_k.
+      // changed from just e because Jordan and Padma realized that reducing the curve mod p doesn't give any p-adic information
+      Append(~ords,<p,e div p^Valuation(e,p)> where e is Exponent(TorsionSubgroup(scl)));
+      // of course this information gets combined with what we already knew.
+      lcm := LCM(lcm,ords[#ords,2]);
+      if not IsDivisibleBy(goal,lcm) then return ords, false; end if;
+    end if;
+  end for;
+  return ords, true;
+end function;
+
 // Fermat quartic: I conjecture that the group is Z + Z/2Z if p is 3 mod 8
 // and Z otherwise (verified up to 100).
 

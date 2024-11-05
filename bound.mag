@@ -44,13 +44,69 @@ end function;
 // compute the bound for all primes up to a given value
 // it's easy enough to adapt this to, e.g., primes that split in a given
 // extension, to deal with twists, for example
-function bound_to(c,b)
+function old_bound_to(c,b:strict := false)
   bd := 0;
   for p in PrimesUpTo(b) do
     bd := GCD(bd,bound(c,p));
-    if bd eq &*[p^Valuation(bd,p): p in [2,3,5]] then return bd; end if;
+    if not strict and bd eq &*[p^Valuation(bd,p): p in [2,3,5]] then return bd; end if;
   end for;
   return bd;
 end function;
 
-     
+// Given a collection of pairs <p,n_p>, find the largest positive integer
+// that divides every n_p in Z[1/p].
+function gcd_ignore_p(pairs)
+  error if exists{i: i in pairs|not IsPrime(i[1])}, "can only ignore primes";
+  pairs := {x: x in pairs|x[2] ne 0};
+  if #pairs le 1 then return 0; end if;
+  gcd := &*[p^Min([Valuation(x[2],p): x in pairs|x[1] ne p]): p in Set(&cat [PrimeDivisors(i[2]): i in pairs])];
+  return gcd;
+end function;
+
+// Jordan and Padma realized that reducing mod p doesn't actually give
+// any p-adic information about the bound, or at least that it's more
+// complicated and we don't actually want to work it out
+function bound_to(c,b:strict := false)
+  bd := 0;
+  p_bds := [];
+  for p in PrimesUpTo(b) do
+    Append(~p_bds,<p,bound(c,p)>);
+    bd := gcd_ignore_p(p_bds);
+    if bd eq 1 or (not strict and bd ne 0 and Max(PrimeDivisors(bd)) le 5) then return bd; end if;
+  end for;
+  return bd;
+end function;
+  
+
+function bound_nf(c,p)
+  qp,toqp := ResidueClassField(p);
+  if exists{x: x in Coefficients(DefiningPolynomial(c))|Valuation(x,p) lt 0} then return 0; end if;
+  P2qp := ProjectiveSpace(qp,2);
+  cp := Curve(P2qp,&+[rep{r: r in qp|Valuation(MonomialCoefficient(DefiningPolynomial(c),m)-r@@toqp,p) gt 0}*CoordinateRing(P2qp)!m: m in Monomials(DefiningPolynomial(c))]);
+  if IsSingular(cp) then return 0; end if;
+  zf := Numerator(ZetaFunction(cp));
+  return easy_bound(zf);
+end function;
+
+function old_bound_to_nf(c,b: strict := false)
+  bd := 0;
+  nf := FieldOfFractions(BaseRing(c));
+  for p in PrimesUpTo(b,nf) do
+    bd := GCD(bd,bound_nf(c,p));
+    if not strict and bd eq &*[p^Valuation(bd,p): p in [2,3,5]] then return bd; end if;
+  end for;
+  return bd;
+end function;
+  
+function bound_to_nf(c,b: strict := false)
+  bd := 0;
+  p_bds := [];
+  nf := FieldOfFractions(BaseRing(c));
+  for p in PrimesUpTo(b,nf) do
+    Append(~p_bds,<Minimum(p),bound_nf(c,p)>);
+    bd := gcd_ignore_p(p_bds);
+    if not strict and bd ne 0 and (bd eq 1 or Max(PrimeDivisors(bd)) le 5) then return bd; end if;
+  end for;
+  return bd;
+end function;
+  

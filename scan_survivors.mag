@@ -71,7 +71,7 @@ cubf := [x: x in [1..10]|forall{i: i in Factorization(x)|i[2] le 2}];
 good1 := [];
 for i in [1..#ord1] do
   "starting curve", i;
-  c := ord1[i];
+  c := thecs[ord1[i]];
   for t in cubf do
     "twisting by", t;
     qt := Curve(P2,&+[m*t^(Degree(m,3) div 3)*MonomialCoefficient(d,m): m in Monomials(d)]) where d is DefiningPolynomial(c);
