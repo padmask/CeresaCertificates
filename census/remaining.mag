@@ -1,0 +1,369 @@
+load "../torsion-order.mag";
+load "../bound.mag";
+load "curves-ht-1.mag";
+
+function excise(x,y:verbose := false)
+  repeat
+    x0 := x;
+    x := Difference(x,y);
+    if verbose then printf "."; end if;
+  until x0 eq x;
+  return x;
+end function;
+
+same_di := func<x,y|DixmierOhnoInvariantsEqual(DixmierOhnoInvariants(x),DixmierOhnoInvariants(y))>;
+
+P2 := ProjectiveSpace(Q,2);
+ls4 := LinearSystem(P2,4);
+curves := [Curve(P2,p(Domain(p)!i)): i in coefs] where p is PolynomialMap(ls4);
+
+inf_inds := [];
+tor_inds := [];
+// gleaned from the census*.log files
+survivors := [1,4575,8874,42902,45312,45320,77220,128136,142594,156913,159006,162397,162421,162435,165748,167619,170041,193665,193666,193795,193918,193919,197007,197008,197125,197126,197252,197253,199555,199796,200384,200385,200486,200584,200585,222394,222396,223825,237130,237131,237206,237275,237276,238569,238570,238626,238627,238689,238690,239887,239888,239943,239996,239997,241355,241445,241519,241548,241552,241556,241559,241564,241568,241570,241572,241573,241574,241575,244321,244326,244327,244329,244330,244332,244333,244336,244340,244341,244342,244818,244869,244870,244909,244910,244912,244913,244925,244926,244928,244929,244931,245375,245419,245447,245456,245457,245459,245740,245743,245787,245790,245964,246026,246030,246032,246035,246038,246041,246043,246044,246045,246046,247210,247212,247213,247222,247229,247230,247231,247260,247261,247263,247264,247267,247269,247271,247693,247713,248155,248179,248190,248192,248194,248196,248198,248199,248421,248423,248425,251890,251904,253547,253665,254648,254844,254876,254902];
+// some of these are the same as others
+cs := [curves[i]: i in survivors];
+dis := [DixmierOhnoInvariants(i): i in cs];
+same := [{x,y}: x,y in [1..#cs]|x lt y and DixmierOhnoInvariantsEqual(dis[x],dis[y])];
+gr := Graph<{1..#cs}|Set(same)>;
+"found", #survivors, "curves in", #ConnectedComponents(gr), "isomorphism classes over C";
+
+/*
+"guessing orders of automorphism groups";
+bds := [];
+for c in cs[1+#bds..#cs] do
+  Append(~bds,GCD([#AutomorphismGroup(ChangeRing(c,GF(p))): p in PrimesInInterval(50,100)|IsNonsingular(ChangeRing(c,GF(p)))]));
+  printf ".";
+end for;*/
+"skipping the slow computation of automorphism group orders";
+bds := [ 6, 6, 4, 6, 2, 2, 6, 6, 6, 6, 6, 6, 6, 4, 6, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 4, 4, 4, 4, 4, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 6, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 24, 8, 8, 4, 4, 4, 4, 8, 8, 8, 4, 4, 4, 8, 8, 4, 4, 8, 4, 4, 4, 4, 4, 4, 8, 8, 4, 4, 2, 2, 2, 2, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 1, 2, 2, 1, 4, 4, 24, 8, 8, 4, 8, 4, 8, 4, 8, 6, 6, 4, 4, 4, 4, 4, 4, 4, 4, 6, 6, 6, 6, 6, 6, 6, 2, 4 ];
+
+// try to find automorphisms
+sl := SL(3,Z);
+slgens := {@sl.i^s: s in [0,1,-1], i in [1..3]@};
+slelts := slgens;
+
+"looking for automorphisms by searching over elements of SL_3(Z)";
+for i in [1..2] do slelts join:= {@x*y: x in slelts, y in slgens@}; end for;
+auts := [Automorphism(P2,i): i in slelts];
+aut_cs := [[auts[1]]: i in cs];
+
+repeat
+  slelts join:= {@x*y: x in slelts, y in slgens|Max([AbsoluteValue(i): i in Eltseq(x*y)]) le 3@};
+  auts := [Automorphism(P2,i): i in slelts];
+  for i in [1..#cs] do
+    if bds[i] ne #aut_cs[i] then
+      aut_cs[i] := [x: x in auts|GCD(DefiningPolynomial(cs[i])@@x,DefiningPolynomial(cs[i])) ne 1];
+      printf "%o ", (bds[i] eq #aut_cs[i] select i else ".");
+    end if;
+  end for;
+  printf "\n";
+until #[i: i in [1..#aut_cs]|#aut_cs[i] ne bds[i]] eq 5;
+
+// we don't worry about 118, 119, or 147, because those are forms of
+// y^3 = x^4 - 1, or 117, which is a form of y^3 = x^4 + x
+
+// nor do we worry about 120, 121, 124, which are forms of the Fermat quartic
+"checking that we have all of them, except in some known cases";
+known_tor := [Curve(P2,P2.2^3*P2.3-(P2.1^4+P2.1^i*P2.3^(4-i))): i in [0,1]];
+known_nontor := [Curve(P2,&+[P2.i^4: i in [1..3]])];
+
+di_tor := [DixmierOhnoInvariants(i): i in known_tor];
+di_nontor := [DixmierOhnoInvariants(i): i in known_nontor];
+
+tor := [x: x in [1..#cs]|exists{d: d in di_tor|DixmierOhnoInvariantsEqual(d,DixmierOhnoInvariants(cs[x]))}]; // 4 of these
+nontor := [x: x in [1..#cs]|exists{d: d in di_nontor|DixmierOhnoInvariantsEqual(d,DixmierOhnoInvariants(cs[x]))}]; // 3 of these
+
+m1 := map<P2->P2|[P2.2+P2.3,2*P2.1-P2.2+P2.3,2*P2.1+P2.2-P2.3]>;
+assert cs[14]@@m1 eq cs[14];
+aut_cs[14] cat:= [m1*i: i in aut_cs[14]];
+assert forall{x: x in [1..#cs]|x in tor cat nontor or bds[x] eq #aut_cs[x]};
+
+// assumes an affine model of the form y^3 = f_4(x), and uses the Laga-Shnidman
+// criterion to decide whether the Ceresa cycle is torsion
+function check_pic(c)
+  F := BaseField(c);
+  Ft := PolynomialRing(F);
+  pol := Evaluate(-Coefficient(e,2,0)/Coefficient(e,2,3),[Ft.1,0]) where e is DefiningPolynomial(c);
+  assert Degree(pol) eq 4;
+  pol /:= LeadingCoefficient(pol);
+  pol := Evaluate(pol,Ft.1-Coefficient(pol,3)/4);
+  c,b,a := Explode(Coefficients(pol));
+  e := EllipticCurve([0,-27/4*Discriminant(pol)]);
+  pt := Points(e,a^2+12*c)[1];
+  is_tor := Order(pt) ne 0;
+  return is_tor;
+end function;
+
+function to_pic(c)
+  v := rep{i: i in [1..3]|forall{m: m in Monomials(DefiningPolynomial(c))|Degree(m,i) mod 3 eq 0}};
+  l := Coefficient(DefiningPolynomial(c),v,3);
+  eqs := [l,c.v];
+  eqs := [rep{c.i: i in [1..3]|forall{e: e in eqs|Denominator(c.i/e) ne 1}}] cat eqs;
+  P2 := AmbientSpace(c);
+  ch := map<P2->P2|eqs>;
+  cpic := c@@Inverse(ch);
+  ap := AffinePatch(cpic,2);
+  assert forall{m: m in Monomials(DefiningPolynomial(ap))|m in Include({ap.1^i: i in [0..4]},ap.2^3)};
+  return ap;
+end function;
+
+// There are 4 remaining curves with trivial automorphism group, all of which
+// have z appearing only to its cube, so they have an extra automorphism over
+// an extension: 36, 37, 38, 114.  It looks like these are not affected by
+// the twist, so we have nothing to do except for applying the criterion of
+// Laga-Shnidman, Vanishing criteria for Ceresa cycles, theorem C.
+"applying Laga-Shnidman criterion to verify that the curves with trivial automorphism group have torsion Ceresa cycle";
+n1 := [x: x in [1..#cs]|x notin tor cat nontor and bds[x] eq 1];
+assert forall{i: i in n1|check_pic(to_pic(cs[i]))};
+
+// For the first one, we get a = -6, b = -12, c = -8, and the point has
+// order 2.
+
+// For the second, we have c = -323/256, b = -9/8, a = -3/8, and the point
+// again has order 2.
+
+// For the third, we have c, b, a = -195/256, -7/8, -3/8, and again order 2.
+
+// For the fourth, I make it -147/256, 13/8, 21/8, order 3.
+
+// There are 13 with automorphism group of order 2, of which 2 (29, 30) are
+// the same.  Of these, 5, 6, 29, 30, 55, 146 appear to have geometric
+// aut gp of order 2, as opposed to 6 for 98, 99, 100, 101, 113, 115, 116.
+// Can we handle the latter by pulling back by (x+y+z:x+yw+zw^2:x+yw^2+zw)?
+// Looks good, for all except the last one.  However, the last one is a
+// special case of the results of Laga-Shnidman: after pulling back by
+// (x+z:-y:x-z) we get y^3 = x^4 + 6x^2 + 1 in suitable affine coordinates,
+// which comes from the point (2:3) of order 6 on y^2 = x^3 + 1.  So that
+// one is torsion, but the others aren't.
+
+"considering curves with 2 automorphisms";
+n2 := [x: x in [1..#bds]|bds[x] eq 2];
+ch2 := [];
+tr := map<P2->P2|[P2.1,P2.2+P2.3,P2.2-P2.3]>;
+"putting them in standard form";
+for i in n2 do
+  s := rep{r: r in auts|r*aut_cs[i,2]*r^-1 in [map<P2->P2|i>: i in [[P2.1,P2.2,-P2.3],[P2.1,P2.3,P2.2]]]};
+  Append(~ch2,cs[i]@@s);
+end for;
+for c in [1..#ch2] do
+  if (ch2[c])@@map<P2->P2|[P2.1,P2.2,-P2.3]> ne ch2[c] then
+    ch2[c] := ch2[c]@@tr;
+  end if;
+end for;
+assert forall{m: m in Monomials(DefiningPolynomial(c)), c in ch2|IsEven(Degree(m,3))};
+"spuriously printing a matrix group in a Magma function to find quotients";
+es := [CurveQuotient(AutomorphismGroup(c, [iso<c->c|a,a> where a is [P2.1,P2.2,-P2.3]])): c in ch2];
+
+Qw<w> := CyclotomicField(3);
+P2w := ProjectiveSpace(Qw,2);
+lfw := [P2w.1+P2w.2+P2w.3,P2w.1+w*P2w.2+w^2*P2w.3,P2w.1+w^2*P2w.2+w*P2w.3];
+autw := map<P2w->P2w|lfw>;
+
+c7<z7> := CyclotomicField(7);
+r7<p7> := sub<c7|z7+1/z7>;
+autr7 := Automorphisms(r7);
+mo7 := MaximalOrder(r7);
+P2r7 := ChangeRing(P2,r7);
+repeat
+  lf := &+[Random(mo7,3)*P2r7.i: i in [1..3]];
+  lfs := [CoordinateRing(P2r7)|DefiningPolynomial(BaseChange(Scheme(P2r7,lf),i)): i in autr7];
+until Rank(Matrix([Coefficients(i): i in lfs])) eq 3;
+
+// this takes care of all but 116, which has a different kind of automorphism.
+"verifying that 6 of the curves have nontorsion Ceresa cycle:";
+for c in [98,99,100,101,113,115] do try
+  ci := rep{cs[c]@@i: i in auts|(cs[c]@@i)@@map<P2->P2|[P2.1,P2.3,P2.2]> eq cs[c]@@i};
+  ciw := Curve(P2w,DefiningPolynomial(ci));
+  ciwq := Curve(P2,Evaluate(DefiningPolynomial(ciw@@autw),lfs));
+  ciwq := Curve(P2,d*LCM([Denominator(i): i in Coefficients(d)])) where d is DefiningPolynomial(ciwq);
+  assert DixmierOhnoInvariantsEqual(d(cs[c]),d(ciwq)) where d is DixmierOhnoInvariants;
+  bd := 2*bound_to(ciwq,50);
+  <c,a,b> where a,b is check_c(ciwq,50:goal := bd);
+  catch e; end try;
+end for;
+"checking the Laga-Shnidman criterion for a 7th";
+ch := map<P2->P2|[P2.1+P2.3,-P2.2,P2.1-P2.3]>;
+n116 := cs[116]@@ch;
+assert n116 eq Curve(P2,P2.1*P2.2^3-(P2.1^4+6*P2.1^2*P2.3^2+P2.3^4));
+// cf. Laga-Shnidman, Ceresa cycles of bielliptic Picard curves
+assert Order(EllipticCurve([0,1])![2,3]) eq 6;
+// or could use check_pic(to_pic(cs[116])) as above
+"leaving the remaining 6, in 5 C-isomorphism classes, undecided";
+left_n2 := [x: x in n2|x notin [98,99,100,101,113,115,116]];
+assert #left_n2 eq 6 and #[x: x in same|forall{i: i in x|i in left_n2}] eq 1;
+
+n4 := [x: x in [1..#bds]|bds[x] eq 4];
+/*"testing curves with automorphism group of order 4 for extra automorphisms over C";
+// There are 88 with automorphism group of order 4, always a Klein four-group.
+// extra automorphisms?
+for i in n4 do
+  for p in PrimesInInterval(60,100) do printf "%o ", <p,#AutomorphismGroup(ChangeRing(cs[i],GF(p)))>; end for;
+  printf "curve %o\n",i;
+end for;*/
+// looks like 8 for (25, 26), (46, 47), 74, (81, 111), (82, 104), 85, 91, 96,
+// (103, 112), (123, 125) (grouping by C-isomorphism)
+// of these, the orbits of 25, 46, 123 are Z/2 + Z/4, the others are D4.
+// I don't think I can handle Z/2 + Z/4, but maybe the others
+// indeed, 81 is a form of x^4 - 14x^2y^2 + y^4 - x^2z^2 - y^2z^2 - z^4,
+// which has bound 2^20 and fails at p = 23
+
+// 82 is a form of x^4 - 14x^2y^2 + y^4 - x^2z^2 - y^2z^2 + z^4: fail at 37
+// 103 is a form of x^4 - 6*x^2*y^2 + y^4 - x^2*z^2 - y^2*z^2 - 2*z^4:
+// fail at 17
+
+"finding the Dixmier-Ohno invariants of biquadratic curves with an extra automorphism";
+Q4<a,b,c,d> := FunctionField(Q,4);
+P24<a4,b4,c4> := ProjectiveSpace(Q4,2);
+gc4 := Curve(P24,a*(a4^4+b4^4)+b*a4^2*b4^2+c*(a4^2+b4^2)*c4^2+d*c4^4);
+digc4,wts := DixmierOhnoInvariants(gc4);
+P3 := Proj(Parent(Numerator(a)));
+Pw := ProjectiveSpace(Q,[i div 3: i in wts]);
+tow := map<P3->Pw|digc4>;
+bs := BaseScheme(tow);
+pcbs := PrimeComponents(bs);
+"determining which of the curves with 4 rational automorphisms have an extra";
+doi_pts := [DixmierOhnoInvariants(cs[x]): x in n4];
+doi_cls := [Scheme(Pw,[d[j]^(Degree(Pw.i) div g)*Pw.i^(Degree(Pw.j) div g) - d[i]^(Degree(Pw.j) div g)*Pw.j^(Degree(Pw.i) div g) where g is GCD([Degree(Pw.i),Degree(Pw.j)]): i,j in [1..#wts]|i lt j]): d in doi_pts];
+doi_cls := [Scheme(Pw,DefiningPolynomials(i) cat [Pw.j: j in [1..#wts]|exists{r: r in DefiningPolynomials(i)|forall{d: d in [1..#wts]|Degree(r,d) eq 0 or d eq j}}]): i in doi_cls];
+assert forall{x: x in DefiningPolynomials(doi_cls[i]), i in [1..#n4]|Evaluate(x,doi_pts[i]) eq 0};
+assert forall{x: x in doi_cls|Dimension(x) eq 0 and Degree(x) eq 1};
+extras := [n4[x]: x in [1..#n4]|Dimension(excise((doi_cls[x])@@tow,BaseScheme(tow))) ge 0];
+"finding that 21 of the 88 have this property";
+assert #extras eq 21; // of course
+// in addition to the 16 in the comment above, also have 89, 90, 118, 119, 147
+myg := sub<GL(3,Q)|[0,1,0,-1,0,0,0,0,1],[1,0,0,0,-1,0,0,0,1],[-1,0,0,0,-1,0,0,0,-1]>;
+c5<z5> := CyclotomicField(5);
+a := hom<c5->c5|z5^2>;
+P2c5<xc5,yc5,zc5> := ProjectiveSpace(c5,2);
+// by doing explicit Galois descent we see that the following creates
+// a new form
+chp2 := map<P2c5->P2c5|[(c5.1-1/c5.1)*xc5+a(c5.1-1/c5.1)*yc5,(c5.1^2-c5.1^3)*xc5+a(c5.1^2-c5.1^3)*yc5,zc5]>;
+
+"verifying that three curves with extra automorphisms have nontorsion Ceresa cycle";
+for i in [81,82,103] do
+  di := DixmierOhnoInvariants(cs[i]);
+  di_back := (Pw!di)@@tow;
+  for c in pcbs do di_back := excise(di_back,c); end for;
+  apt := rep{x: x in RationalPoints(Scheme(PrimeComponents(di_back)[1],P3.1-P3.3))|0 notin Eltseq(x)};
+  toq := hom<Q4->Q|Eltseq(apt)>;
+  myc4 := Curve(P2,DefiningPolynomial(BaseChange(gc4,toq)));
+  assert same_di(myc4,cs[i]);
+  myformc4 := Curve(P2,DefiningPolynomial(Curve(P2c5,DefiningPolynomial(myc4))@@chp2));
+  myformc4 := Curve(P2,d*LCM([Denominator(i): i in Coefficients(d)])) where d is DefiningPolynomial(myformc4);
+  bd := 2*bound_to(myformc4,50);
+  time cc,istor := check_c(myformc4,50:goal := bd);
+  cc; assert not istor;
+end for;
+
+// 16 for (89, 90),
+// 48 for 118, 119, 147 (as we knew),
+// and 4 otherwise.
+// Of these, 74, 85, 91, 96 are already taken care of by curves with 8 auts.
+// How can we deal with 89 or 90?  The automorphisms are defined over
+// Q(zeta_8) and form a group of order 16 whose centre is cyclic of order 4.
+// The curve is x^4 + x^2 y^2 - y^4 + z^4, and a nonobvious automorphism is
+// (x:y:z) -> (z8^3 y: z8 x: z).  The automorphisms defined over Q(i) form
+// an abelian group, so we can't make the same kind of twist as before.
+// However, Lorenzo Garcia tells us how to find the twist.
+
+"verifying that a curve with 16 automorphisms over C doesn't work";
+form_89 := Curve(P2,37*P2.1^4+520*P2.1^3*P2.2+2782*P2.1^2*P2.2^2+6760*P2.1*P2.2^3+6253*P2.2^4+P2.3^4);
+assert same_di(form_89,cs[89]);
+bd := 2*bound_to(form_89,20);
+cc,istor := check_c(form_89,40:goal := bd);
+assert not istor;
+
+"postponing some curves with 4 automorphisms that have forms with 8";
+assert forall{x: x in [74,85,91,96]|exists{s: s in same|x in s and exists{t: t in s|bds[t] eq 8}}};
+
+// we still need to deal with (25, 26), (46, 47), (123, 125)
+n4_todo := [x: x in n4|x notin extras or x in [25,26,46,47,123,125]];
+mins := [x: x in n4_todo|forall{i: i in same|x ne Max(i)}];
+assert #mins eq 36;
+"saving", #mins, "curves with 4 automorphisms for later";
+// we'll come back to these
+
+// There are 24 with automorphism group of order 6, namely 1, 2, 4, 7, 8, 9,
+// 10, 11, 12, 13, 15, 16, 56, 57, 102, 129, 130, 139, 140, 141, 142, 143,
+// 144, 145.  In all cases the group is S3, and we can conjugate it into the
+// obvious S3.  In all cases a twist shows that Ceresa is not torsion:
+// namely, evaluate at conjugates of x + (-p7^2 - p7)*y + (-p7 + 1)*z,
+// where p7 = zeta_7 + 1/zeta_7.
+
+"checking that curves with 6 automorphisms have nontorsion Ceresa cycle by means of twists";
+n6 := [x: x in [1..#bds]|bds[x] eq 6];
+perms := {@x: x in aut_cs[1]@};
+c2 := rep{r: r in auts|{@r*i*r^-1: i in aut_cs[2]@} eq perms};        
+c57 := rep{r: r in auts|{@r*i*r^-1: i in aut_cs[57]@} eq perms};
+
+cbs := [];
+for i in n6 do
+  if aut_cs[i] eq aut_cs[1] then Append(~cbs,cs[i]);
+  elif aut_cs[i] eq aut_cs[2] then Append(~cbs,cs[i]@@c2);
+  elif aut_cs[i] eq aut_cs[57] then Append(~cbs,cs[i]@@c57);
+  end if;
+end for;
+tws := [Curve(P2,Evaluate(DefiningPolynomial(c),lfs)): c in cbs];    
+ubds := [2*bound_to(i,50): i in tws];
+for i in [1..#tws] do
+  check_c(tws[i],30:goal := ubds[i]);
+  printf "%o ", n6[i];
+end for;
+printf "\n";
+
+// There are 13 with automorphism group of order 8 (where we don't worry
+// about 121 or 124, forms of Fermat).  In some cases we should be
+// able to deal with them by twisting over Q(zeta_5), or maybe some other
+// cyclic quartic extension?
+
+"Checking curves with 8 automorphisms";
+n8 := [x: x in [1..#bds]|bds[x] eq 8 and x notin tor cat nontor];
+gm := [sub<GL(3,Q)|Append([Matrix(i): i in aut_cs[n]],ScalarMatrix(Q,3,-1))>: n in n8];
+// We can always conjugate to a standard group.
+
+"writing them in standard form";
+cons := [rep{x: x in slelts|g^(GL(3,Q)!x) eq myg}: g in gm];
+c8ch := [cs[n8[i]]@Automorphism(P2,cons[i]): i in [1..#n8]];
+assert forall{x: x in myg, c in c8ch|c@@Automorphism(P2,x) eq c};
+// we have them in standard form
+cc5s := [Curve(P2c5,DefiningPolynomial(i)): i in c8ch];
+"finding suitable twists";
+forms := [Curve(P2,DefiningPolynomial(i@@chp2)): i in cc5s];
+intforms := [Curve(P2,d*LCM([Denominator(i): i in Coefficients(d)])) where d is DefiningPolynomial(c): c in forms];
+"finding upper bounds";
+n8bds := [2*bound_to(i,50): i in intforms];
+// 71,79; 72,128; 77,95; 78,87; 83,84,122,126; 94
+// i.e., #1, 2, 3, 4, 6, 7, 9 are all we need
+"finding lower bounds";
+to60 := [<a,b> where a,b is check_c(intforms[i],60:goal := n8bds[i]): i in [1..#n8]];
+
+"checking that every such curve has nontorsion Ceresa";
+assert forall{x: x in [1..#n8]|not to60[x,2] or exists{s: s in same|n8[x] in s and exists{r: r in [1..#n8]|not to60[r,2] and n8[r] in s}}};
+// in other words, we get all of them.
+
+// There is 1 with automorphism group of order 24, namely #70, aside from 120
+// which we already know not to be torsion.  By taking the same twist as
+// before, we find a lower bound of 6 and an upper bound of 2^13, so no.
+"considering 1 curve with 24 automorphisms";
+cc5 := Curve(P2c5,DefiningPolynomial(cs[70]));
+form := Curve(P2,DefiningPolynomial(cc5@@chp2));
+intform := Curve(P2,d*LCM([Denominator(i): i in Coefficients(d)])) where d is DefiningPolynomial(form);
+n24bd := 2*bound_to(intform,50);
+l24,is24 := check_c(intform,50:goal := n24bd);
+assert not is24;
+
+"coming back to the curves with automorphism group of order 4";
+// hard ones: 14, 19, 25
+load "bloch_new.mag";
+nt_4 := [];
+fail := [];
+for m in mins do
+  // near the beginning some of them take a while
+  time istor,tup := test_curve(cs[m],aut_cs[m]);
+  if istor then
+    Append(~fail,m); "!!! failed to prove that the cycle is not torsion";
+  else
+    Append(~nt_4,m);
+  end if;
+end for;

@@ -1,0 +1,30 @@
+// rerunning to take into account the realization that the reduction of the
+// curve mod p doesn't give any actual information about bounds
+load "../torsion-order.mag";
+load "../bound.mag";
+load "curves-ht-1.mag";
+
+P2 := ProjectiveSpace(Q,2);
+ls4 := LinearSystem(P2,4);
+curves := [Curve(P2,p(Domain(p)!i)): i in coefs] where p is PolynomialMap(ls4);
+
+inf_inds := [];
+tor_inds := [];
+for nc in [1..#curves] do
+  c := curves[nc];
+  bd := 2*bound_to(c,30);
+  ords := check_c(c,30:goal := bd);
+  max := LCM([x[2]: x in ords]);
+  "lower bound for curve", nc, "is", max;
+  if exists(m){m: m in ords|not IsDivisibleBy(bd,m[2])} then
+    "failure of divisibility at", m[1], "with lower bound of", m[2], "and upper bound of", bd;
+    Append(~inf_inds,<nc,m[1],m[2],bd>);
+  else
+    assert IsDivisibleBy(bd,max);
+    "could be torsion for curve ", nc;
+    Append(~tor_inds,<nc,bd,max>);
+  end if;
+end for;
+
+"Possible torsion indices and bounds:", tor_inds;
+"Nontorsion indices and prime", inf_inds;

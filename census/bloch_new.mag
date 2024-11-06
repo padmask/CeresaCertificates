@@ -1,0 +1,412 @@
+// function to study the "Bloch shadow" coming from correspondences
+// on semidiagonal quartics
+load "../bound.mag";
+load "interp.mag";
+// testing: start with c = curves[54] from survivors.mag and change by
+// y,z -> y+z,y-z
+// error if x eq 28 where _,x is GetVersion(), "bugs in 2.28 stop this code from running";
+
+function semidiag(c,auts)
+  P2 := AmbientSpace(c);
+  mats := [Matrix(map<P2->P2|i>): i in auts];
+  mats := [x/r where _,r is IsPower(Determinant(x),3): x in mats];
+  sps := [&meet [Kernel(mats[i]-v[i]): i in [1..#auts]]: v in CartesianPower({1,-1},#auts)];
+  vecs := [x: x in Basis(v), v in sps];
+  sd := c@@Automorphism(P2,Matrix(vecs));
+  assert forall{m: m in Monomials(DefiningPolynomial(sd)), i in [1..3]|IsEven(Degree(m,i))};
+  return sd;
+end function;
+  
+// assumes that c is semidiagonal
+function make_e(c)
+  F := BaseField(c);
+  P2w := ProjectiveSpace(F,[1,2,1]);
+  to2ws := [map<c->P2w|Insert(Remove([c.i: i in [1..3]],i),2,c.i^2)>: i in [1..3]];
+  g1s := [Image(i): i in to2ws];
+  to2ws := [map<c->g1s[i]|Insert(Remove([c.i: i in [1..3]],i),2,c.i^2)>: i in [1..3]];
+  es := [Jacobian(i): i in g1s];
+  return to2ws,es;
+end function;
+
+// I should try to sort these in some way that has more to do with how long
+// it takes to check each one
+function make_p(es: bd := 100)
+  badp := {@x: x in BadPrimes(e), e in es@};
+  goodp := [<p,i>: i in [1..3], p in PrimesUpTo(bd)|p notin badp and #{FrobeniusTraceDirect(es[j],p)^2: j in Remove([1..3],i)} eq 1];
+  return badp,goodp;
+end function;
+
+function sort_good_p(es,goodp)
+  goodp_val := [];
+  for i in goodp do
+    eps := [ChangeRing(es[j],GF(i[1])): j in [1..3]|j ne i[2]];
+    Append(~goodp_val,i[1]*rep{x eq 18 select 1000 else x: x in [1..18]|x eq 18 or Evaluate(ClassicalModularPolynomial(x),[jInvariant(i): i in eps]) eq 0});
+  end for;
+  Sort(~goodp_val,~perm);
+  goodp := [goodp[i^perm]: i in [1..#goodp]];
+  return goodp;
+end function;
+
+// twist variable i by n
+function twist(c,i,n)
+  K := BaseField(c);
+  P2 := AmbientSpace(c);
+  if IsSquare(K!n) then
+    fld := K;
+    _,s := IsSquare(K!n);
+  else
+    fld<s> := ext<K|Polynomial([-n,0,1])>;
+  end if;
+  ctw := Curve(P2,Evaluate(DefiningPolynomial(c),[j eq i select s*cfld.j else cfld.j: j in [1..3]])) where cfld is BaseChange(c,fld);
+  return ctw;
+end function;
+
+forward check_indep;
+
+function match_e(c,to2ws,es,p,drop: confirm := 0, use_frob2 := false, bd := 1, skip_frob := false, early_abort := true)
+  "considering reductions mod", p;
+  keep := Remove([1..3],drop);
+  error if #keep ne 2, "invalid drop";
+  F := GF(p);
+  ep := [ChangeRing(e,F): e in es];
+  error if #{FrobeniusTraceDirect(es[i],p)^2: i in keep} eq 2, "not isogenous mod p";
+  cl,tocl := ClassGroup(ep[drop]);
+  if IsDivisibleBy(bd,#ep[drop]) and early_abort then
+    "shadow cannot show non-torsion";
+    return cl!0;
+  end if;
+  if #{#ep[i]: i in keep} ne 1 or ({#ep[i]: i in keep} eq {p+1} and not IsIsomorphic(ep[Min(keep)],ep[Max(keep)])) then 
+    // if we change variable 1 by replacing x^2 by tx^2, we twist the first
+    // quotient by 1/t^2 and the other two by t
+    "twisting curve";
+    c := twist(c,keep[1],rep{q: q in [1..2*p]|KroneckerSymbol(q,p) eq -1});
+    to2ws,es := make_e(c);
+    // might still not be good enough, if j = 0 or 1728?
+    ep := [ChangeRing(e,F): e in es];
+    assert #{#ep[i]: i in keep} eq 1;
+    if #{jInvariant(ep[i]): i in keep} eq 1 and not IsIsomorphic(ep[Min(keep)],ep[Max(keep)]) then
+      "twist failed";
+      return cl!0;
+    end if;
+  end if;
+  cl,tocl := ClassGroup(ep[drop]);
+  cp := ChangeRing(c,F);
+  "mapping to genus-1 quotients";
+  g1sp := [ChangeRing(Codomain(i),F): i in to2ws];
+  to2wsp := [map<cp->g1sp[i]|DefiningPolynomials(to2ws[i])>: i in [1..3]];
+  if p le 1000 then
+    cpts := RationalPoints(cp);
+    if #cpts eq 0 then "no points"; return cl!0; end if;
+  else
+    cpts := {@@};
+    repeat
+      cpts join:= {@cp|RationalPoints(Scheme(cp,cp.1-Random(F)*cp.2))@};
+    until #cpts gt 800;
+  end if;
+
+  "mapping to elliptic quotients";
+  toes := [<e,t> where e,t is EllipticCurve(g1sp[i],to2wsp[i](cpts[1])): i in [1..3]];
+  rtoes := [toes[i,2]*x where _,x is IsIsomorphic(toes[i,1],ep[i]): i in [1..3]];
+  if p le 31 then
+    // the interpolation doesn't work well if we don't have enough points
+    F2 := ext<F|Floor(Log(1000)/Log(p))>;
+    cp2 := ChangeRing(cp,F2);
+    cpts2 := RationalPoints(cp2);
+    ep2 := [ChangeRing(i,F2): i in ep];
+    rt2 := [map<cp2->ep2[i]|DefiningPolynomials(to2wsp[i]*rtoes[i])>: i in [1..3]];
+    rtoes := [Extend(map<cp->ep[i]|interpolate_map(rt2[i],2,cpts2:silent)>): i in [1..3]];
+  else
+    rtoes := [Extend(map<cp->ep[i]|interpolate_map(to2wsp[i]*rtoes[i],2,cpts:silent)>): i in [1..3]];
+  end if;
+  assert forall{x: x in rtoes|IsEmpty(BaseScheme(x))};
+
+  // workaround for a bug in 2.25, fixed in 2.28
+  cmp := func<n|n eq 1 select p.1-p.2 where p is PolynomialRing(Z,2) else ClassicalModularPolynomial(n)>;
+  
+  // now we need to match them
+  deg := rep{n: n in [1..18]|n eq 18 or Evaluate(cmp(n),[jInvariant(ep[i]): i in keep]) eq 0};
+  if deg ge 8 then
+    "finding graph of isogeny will be too hard";
+    return cl!0;
+  end if;
+  "choosing isogeny of degree", deg;
+  if deg eq 1 then
+    _,isog := IsIsomorphic(ep[keep[1]],ep[keep[2]]);
+  else
+    dp := DivisionPolynomial(ep[keep[1]],deg);
+    fdp := Factorization(dp);
+    prods := [&*[fdp[x,1]: x in s]: s in Subsets({1..#fdp})|&+[Z|Degree(fdp[x,1]): x in s] eq deg div 2];
+    isogs := [**];
+    for i in prods do
+      try Append(~isogs,<a,b> where a,b is IsogenyFromKernel(ep[keep[1]],i));
+      catch e; end try;
+    end for;
+    if forall(but){r: r in isogs|not IsIsomorphic(r[1],ep[keep[2]])} then
+      // this could happen if there are conjugate isogenies rather than
+      // a single rational one
+      "couldn't find appropriate isogeny";
+      return cl!0;
+    end if;
+    isog := but[2]*m where _,m is IsIsomorphic(but[1],ep[keep[2]]);
+  end if;
+  isog := Extend(isog);
+  
+  P22p := ProductProjectiveSpace(F,[2,2]);
+  prs := [map<P22p->AmbientSpace(ep[keep[i]])|[P22p.j: j in [3*i-2..3*i]]>: i in [1,2]];
+  ee := &meet [ep[keep[i]]@@prs[i]: i in [1,2]];
+  "finding its graph";
+  togr := map<ep[keep[1]]->ee|[[ep[keep[1]].j: j in [1..3]] cat dp: dp in AllDefiningPolynomials(isog)]>;
+  if deg le 2 then
+    gr := Image(togr);
+  else
+    win := false;
+    df := 1; td := 3;
+    old_bs := P22p;
+    repeat
+      printf "%o ", <df,td>;
+      lss := [LinearSystem(P22p,[i,j-i]): i in [1..j], j in [1..td]];
+      Fd := ext<F|df>;
+      for p in RationalPoints(ep[keep[1]],Fd) do
+        if p notin BaseScheme(togr)(Fd) then
+          cl := Cluster(P22p(Fd)!togr(p));
+          lss := [#Sections(l) eq 0 select l else LinearSystem(l,cl): l in lss];
+        end if;
+      end for;
+      bs := &meet [BaseScheme(i): i in lss];
+      if bs eq old_bs or Dimension(bs) lt 1 then df +:= 1; td := 3; else td +:= 1; end if;
+      <Dimension(bs),ArithmeticGenus(bs)>;
+      old_bs := bs;
+      if Dimension(bs) eq 1 and ArithmeticGenus(bs) eq 1 and IsPrime(Ideal(bs)) then
+        try
+          gr := Curve(Scheme(ee,MinimalBasis(bs)));
+          togr := map<ep[keep[1]]->gr|AllDefiningPolynomials(togr)>;
+          win := true;
+        catch e;
+        end try;
+      end if;
+    until win;
+    gr := Curve(Scheme(ee,MinimalBasis(bs)));
+  end if;
+  togr := map<ep[keep[1]]->gr|AllDefiningPolynomials(togr)>;
+
+  // frob := map<ee->ee|[P22p.i^p: i in [1..3]] cat [P22p.j: j in [4..6]]>;
+  frob := map<ee->ee|(skip_frob select [P22p.i: i in [1..6]] else (use_frob2 select [P22p.i: i in [1..3]] cat [P22p.j^p: j in [4..6]] else [P22p.i^p: i in [1..3]] cat [P22p.j: j in [4..6]]))>;
+  toee := map<cp->ee|[v[1] cat v[2]: v in CartesianProduct([Set(AllDefiningPolynomials(rtoes[i])): i in keep])]>;
+  frgr := Scheme(ee,[Evaluate(i,DefiningPolynomials(frob)): i in DefiningPolynomials(gr)]);
+  
+  "pulling back graph of Frobenius";
+  frgrback := Scheme(cp,[Evaluate(i,dp): i in DefiningPolynomials(frgr), dp in AllDefiningPolynomials(toee)]);
+
+  // now what do we do with it?
+  // Bloch doesn't have to worry about the base point because the graph of
+  // Frobenius doesn't depend on it.
+  // I think we don't either, by taking our 0 to have this common source?
+  // But needs checking.
+
+  "breaking it up";
+  time ei := EliminationIdeal(Ideal(frgrback),{2,3}); // or {1,3}?
+  dfb := Degree(frgrback);
+  cps := [];
+  prd := [Scheme(frgrback,f[1]): f in Factorization(Basis(ei)[1])];
+  // maybe not worth doing
+  // for i in [1..#prd] do Saturate(~prd[i]); end for; 
+  
+  badcps := [];
+  goodfactors := [];
+  for f in Factorization(Basis(ei)[1]) do
+    i := Scheme(frgrback,f[1]);
+    if IsEmpty(i) then continue; end if;
+    for e in PrimaryComponents(i) do
+      di := Difference(frgrback,e);
+      ct := 0;
+      while Degree(di)+Degree(e) eq Degree(frgrback) do
+        printf ".";
+        frgrback := di;
+        Append(~cps,e);
+        Append(~goodfactors,f[1]);
+        di := Difference(frgrback,e);
+        ct +:= 1;
+      end while;
+      if ct eq 0 then Append(~badcps,e); end if;
+    end for;
+  end for;
+  printf "\n";
+  [Degree(i): i in goodfactors];
+  [Degree(i): i in cps];
+  flds := [Degree(goodfactors[i]) le 1 select ext<F|Degree(cps[i])> else ext<ext<F|Evaluate(goodfactors[i],[0,PolynomialRing(F).1,1])>|Z!(Degree(cps[i])/Degree(goodfactors[i]))>: i in [1..#goodfactors]];
+  
+  // cps cat:= IsEmpty(frgrback) select [] else PrimaryComponents(frgrback);
+  // new way
+  assert IsEmpty(frgrback); // what can be left?
+  // cppts := [*cp(flds[i])!Eltseq(RationalPoints(Scheme(cpf,(Degree(flds[i]) gt 1 select cpf.2-flds[i].1*cpf.3 else /*Roots(goodfactors[i])[1,1])*cpf.3*/ DefiningPolynomials(cpf)[1])))[1]) where cpf is ChangeRing(cps[i],flds[i]): i in [1..#cps]*];
+  "making points the new way";
+  cppts := [**];
+  for i in [1..#cps] do
+    fld1 := (Degree(goodfactors[i]) eq 1 select F else ext<F|Evaluate(goodfactors[i],[0,PolynomialRing(F).1,1])>);
+    // eq1 := Factorization(PolynomialRing(fld1,3)!goodfactors[i])[1,1];
+    eq1 := (Degree(goodfactors[i]) eq 1 select goodfactors[i] else p.2-fld1.1*p.3 where p is PolynomialRing(fld1,3));
+    assert IsDivisibleBy(Parent(eq1)!goodfactors[i],eq1);
+    fld2 := (Degree(cps[i]) eq Degree(goodfactors[i]) select fld1 else ext<fld1|Z!(Degree(cps[i])/Degree(goodfactors[i]))>);
+    Append(~cppts,cp(fld2)!Eltseq(RationalPoints(Scheme(ChangeRing(cps[i],fld2),eq1))[1]));
+  end for;
+
+  // why shouldn't this work?  The base scheme is empty.
+  impts := [*rtoes[drop](i): i in cppts*];
+  ims_e := [Cluster(i): i in impts];
+  assert forall{i: i in [1..#impts]|IsDivisibleBy(Degree(cps[i]),Degree(ims_e[i]))};
+  ims_e_new := [(Degree(cps[i]) div Degree(ims_e[i]))*Divisor(ep[drop],Ideal(ims_e[i])): i in [1..#impts]];
+  /*"making points the old way";
+  // old way
+  divs := [Divisor(cp,Ideal(i)): i in cps];
+  // ims_e := [Pushforward(rtoes[drop],i): i in divs];
+  ims_e := [];
+  for i in [1..#cps] do
+    imi := apply_map(rtoes[drop],cps[i]);
+    if Degree(imi) eq Degree(cps[i]) then
+      Append(~ims_e,Divisor(ep[drop],Ideal(imi)));
+    else
+      pf := Pushforward(rtoes[drop],divs[i]);
+      assert Degree(pf) eq Degree(cps[i]);
+      Append(~ims_e,pf);
+    end if;
+  end for;
+  assert ims_e eq ims_e_new;*/
+  "making sure we have everything";
+  d1 := &+ims_e_new; // cf. Bloch, below lemma 3.1 on p. 99
+  assert Degree(d1) eq dfb;
+
+  "pushing forward ramification divisor";
+  // d0 := Divisor(ep[drop],rtoes[drop](Scheme(cp,cp.3)));
+  d0 := Pushforward(rtoes[drop],Divisor(cp,(Scheme(cp,cp.3))));
+  d := Degree(d0)*d1-dfb*d0;
+  assert Degree(d) eq 0;
+
+  dclass := dfb*(d0@@tocl)-Degree(d0)*&+[i@@tocl: i in ims_e_new];
+  if confirm gt 0 then
+    printf "class found is %o, checking translation invariance\n", dclass;
+    dcs := check_indep(cp,cpts,keep,drop,F,ep,p,to2wsp,rtoes,isog,gr,ee,tocl: n := confirm, use_frob2 := use_frob2, skip_frob := skip_frob);
+    error if Set(dcs) ne {dclass}, "not constant?";
+  end if;
+  return dclass;
+end function;
+
+
+// code to verify that the shadow doesn't depend on the choices.
+function check_indep(cp,cpts,keep,drop,F,ep,p,to2wsp,rtoes,isog,gr,ee,tocl: n := 10, use_frob2 := false, skip_frob := false)
+  tr1s := [map<ep[1]->ep[1]|Eltseq(TranslationMap(ep[1],p)(GenericPoint(ep[1])))>: p in RationalPoints(ep[1])];
+  tr2s := [map<ep[2]->ep[2]|Eltseq(TranslationMap(ep[2],p)(GenericPoint(ep[2])))>: p in RationalPoints(ep[2])];
+  tr3s := [map<ep[3]->ep[3]|Eltseq(TranslationMap(ep[3],p)(GenericPoint(ep[3])))>: p in RationalPoints(ep[3])];
+  rtoes0 := rtoes;
+
+  P22p := AmbientSpace(ee);
+  p := #F;
+  
+  dcs := [];
+  for i in [1..n] do
+    rtoes := [rtoes0[1]*Random(tr1s),rtoes0[2]*Random(tr2s),rtoes0[3]*Random(tr3s)];
+    if p le 31 then
+      // the interpolation doesn't work well if we don't have enough points
+      F2 := ext<F|Floor(Log(1000)/Log(p))>;
+      cp2 := ChangeRing(cp,F2);
+      cpts2 := RationalPoints(cp2);
+      ep2 := [ChangeRing(i,F2): i in ep];
+      rt2 := [map<cp2->ep2[i]|DefiningPolynomials(rtoes[i])>: i in [1..3]];
+      rtoes := [Extend(map<cp->ep[i]|interpolate_map(rt2[i],2,cpts2:silent)>): i in [1..3]];
+    else
+      rtoes := [Extend(map<cp->ep[i]|interpolate_map(rtoes[i],2,cpts:silent)>): i in [1..3]];
+    end if;
+    //  for i in [1,2,3] do rtoes[i] := Extend(map<cp->ep[i]|interpolate_map(rtoes[i],2,cpts: silent)>); end for;
+
+    toee := map<cp->ee|[v[1] cat v[2]: v in CartesianProduct([Set(AllDefiningPolynomials(rtoes[i])): i in keep])]>;
+    // frob := map<ee->ee|[P22p.i^p: i in [1..3]] cat [P22p.j: j in [4..6]]>;
+    frob := map<ee->ee|(skip_frob select [P22p.i: i in [1..6]] else (use_frob2 select [P22p.i: i in [1..3]] cat [P22p.j^p: j in [4..6]] else [P22p.i^p: i in [1..3]] cat [P22p.j: j in [4..6]]))>;
+    // frob := map<ee->ee|[P22p.i: i in [1..3]] cat [P22p.j^p: j in [4..6]]>;
+    frgr := Scheme(ee,[Evaluate(i,DefiningPolynomials(frob)): i in DefiningPolynomials(gr)]);
+    
+    frgrback := Scheme(cp,[Evaluate(i,dp): i in DefiningPolynomials(frgr), dp in AllDefiningPolynomials(toee)]);
+
+    ei := EliminationIdeal(Ideal(frgrback),{2,3}); // or {1,3}?
+    dfb := Degree(frgrback);
+    cps := [];
+    prd := [Scheme(frgrback,f[1]): f in Factorization(Basis(ei)[1])];
+    // maybe not worth doing
+    // for i in [1..#prd] do Saturate(~prd[i]); end for; 
+    
+    badcps := [];
+    for i in prd, e in PrimaryComponents(i) do
+      di := Difference(frgrback,e);
+      ct := 0;
+      while Degree(di)+Degree(e) eq Degree(frgrback) do
+        frgrback := di;
+        Append(~cps,e);
+        di := Difference(frgrback,e);
+        ct +:= 1;
+      end while;
+      if ct eq 0 then Append(~badcps,e); end if;
+    end for;
+    
+    cps cat:= IsEmpty(frgrback) select [] else PrimaryComponents(frgrback);
+    // [RationalPoints(x)[1]: x in cps|Degree(ReducedSubscheme(x)) eq 1];
+    divs := [Divisor(cp,Ideal(i)): i in cps];
+    // ims_e := [Pushforward(rtoes[drop],i): i in divs];
+    ims_e := [];
+    for i in [1..#cps] do
+      imi := apply_map(rtoes[drop],cps[i]);
+      if Degree(imi) eq Degree(cps[i]) then
+        Append(~ims_e,Divisor(ep[drop],Ideal(imi)));
+      else
+        pf := Pushforward(rtoes[drop],divs[i]);
+        assert Degree(pf) eq Degree(cps[i]);
+        Append(~ims_e,pf);
+      end if;
+    end for;
+    d1 := &+ims_e; // cf. Bloch, below lemma 3.1 on p. 99
+    assert Degree(d1) eq dfb;
+
+    d0 := Pushforward(rtoes[drop],Divisor(cp,(Scheme(cp,cp.3))));
+    d := Degree(d0)*d1-dfb*d0;
+    assert Degree(d) eq 0;
+
+    dclass := dfb*(d0@@tocl)-Degree(d0)*&+[i@@tocl: i in ims_e];
+    Append(~dcs,dclass);
+    // printf ".";
+    <dfb*(d0@@tocl),Degree(d0)*&+[i@@tocl: i in ims_e],dclass>;
+  end for;
+  return dcs;
+end function;
+
+// Corollary 4.16 explains why we need 6
+function test_curve(c,auts: bd_fn := func<c|6*bound_to(c,100)>, pbd := 300, skip_frob := false, early_abort := true)
+  sd := semidiag(c,[DefiningPolynomials(i): i in auts]);
+  to2ws,es := make_e(sd);
+  "j-invariants of quotient curves:", [jInvariant(i): i in es];
+  badp, goodp := make_p(es: bd := pbd);
+  goodp := sort_good_p(es,goodp);
+  "reductions available:", goodp;
+  bd := bd_fn(c);
+  "upper bound is", bd;
+  for pi in goodp do
+    ord := Order(match_e(sd,to2ws,es,pi[1],pi[2]: bd := bd, skip_frob := skip_frob, early_abort := early_abort));
+    if IsDivisibleBy(bd,ord) then
+      "order", ord, "for", pi;
+    else
+      "!!! order", ord, "for", pi, "does not divide bound of", bd;
+      return false, <pi[1],pi[2],ord,bd>;
+    end if;
+  end for;
+  return true, <0,0,0,bd>;
+end function;
+
+/* 
+// example of usage (or see semidiagonal-example.mag)
+P2 := ProjectiveSpace(Q,2);
+// this is cs[14]
+c := Curve(P2,-P2.1^4 - P2.1^3*P2.2 + P2.1^2*P2.2^2 - P2.1*P2.2^3 - P2.1^3*P2.3 + P2.1^2*P2.3^2 - P2.2^2*P2.3^2 - P2.1*P2.3^3);
+auts := [map<c->c|i,i>: i in [[P2.1,P2.2,P2.3],[-P2.1,-P2.3,-P2.2],[P2.2 + P2.3,2*P2.1 - P2.2 + P2.3,2*P2.1 + P2.2 - P2.3],[-P2.2 - P2.3,-2*P2.1 - P2.2 + P2.3,-2*P2.1 + P2.2 - P2.3]]];
+test_curve(c,auts); // shows that the Ceresa cycle is not torsion
+
+// a form of the Lilienfeldt-Shnidman curve
+c := Curve(P2,12*(P2.1^4+P2.2^4+P2.2^2*P2.3^2-P2.3^4/12));
+auts := [map<c->c|i,i>: i in [[P2.1,s*P2.2,t*P2.3]: s,t in [1,-1]]];
+test_curve(c,auts: pbd := 100); // doesn't show that the Ceresa cycle is not torsion
+*/

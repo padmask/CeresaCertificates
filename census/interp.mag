@@ -1,0 +1,123 @@
+// try to interpolate a map by equations of given degree
+function interpolate_from_pairs(vin,vout,deg,ptpairs: test := true, silent := false)
+  // mons := MonomialsOfWeightedDegree(CoordinateRing(AmbientSpace(vin)),deg);
+  ls := LinearSystem(AmbientSpace(vin),deg);
+  mons := Sections(ls);
+  if not silent then "taking trace of linear system"; end if;
+  // ls := LinearSystemTrace(ls,vin);
+  ls := LinearSystem(AmbientSpace(vin),[x: x in Sections(ls)|x notin LeadingMonomialIdeal(Ideal(vin))]);
+  mons := Sections(ls);
+  F := BaseField(vin);
+  rankim := #Eltseq(ptpairs[1,2]);
+  Fn := VectorSpace(F,#mons*rankim);
+  conds := [Fn|];
+  if not silent then "building conditions"; end if;
+  for i in ptpairs, j in [1..rankim], k in [j+1..rankim] do
+    vals := [Evaluate(m,Eltseq(i[1])): m in mons];
+    valj := [i[2,k]*v: v in vals];
+    valk := [-i[2,j]*v: v in vals];
+    valim := Fn!0;
+    for r in [1..#vals] do
+      valim[#mons*(j-1)+r] := valj[r];
+      valim[#mons*(k-1)+r] := valk[r];
+    end for;
+    Append(~conds,valim);
+  end for;
+
+  if not silent then "finding kernel"; end if;
+  ker := Kernel(Transpose(Matrix(conds)));
+  newmeqs := [[&+[v[i+j*#mons]*mons[i]: i in [1..#mons]]: j in [0..rankim-1]]: v in Basis(ker)];
+  newmaps := [];
+  goodeqs := [];
+  if test then
+    if not silent then "testing", #newmeqs, "set(s) of equations"; end if;
+    for i in newmeqs do
+      try newmap := map<vin->vout|i>;
+      assert forall{p: p in ptpairs|p[1] in BaseScheme(newmap) or newmap(p[1]) eq p[2]};
+      Append(~newmaps,newmap);
+      Append(~goodeqs,i);
+      if not silent then printf "+"; end if;
+      catch e if not silent then printf "."; end if; end try;
+    end for;
+  else
+    if not silent then "skipping check for", #newmeqs, "map(s)"; end if; 
+    goodeqs := newmeqs;
+    newmaps := [map<vin->vout|i:Check := false>: i in newmeqs];
+  end if;
+  
+  return goodeqs,newmaps;
+end function;
+
+function interpolate_map(m,deg,pts: silent := false, test := true)
+  ptpairs := [];
+  for i in pts do try Append(~ptpairs,<i,m(i)>); catch e; end try; end for;
+  goodeqs,newmaps := interpolate_from_pairs(Domain(m),Codomain(m),deg,ptpairs: silent := silent, test := test);
+  return goodeqs,newmaps;
+end function;
+
+// try to fit a rational function
+function ratfn(ins,outs,deg)
+  F := FieldOfFractions(Universe(ins));
+  eqns := [[ins[j]^i: i in [0..deg]] cat [-ins[j]^i*outs[j]: i in [0..deg]]: j in [1..#ins]];
+  ker := Kernel(Transpose(Matrix(F,eqns)));
+  Ft := FunctionField(F);
+  fns := {@&+[v[i]*Ft.1^(i-1): i in [1..deg+1]]/&+[v[i+deg+1]*Ft.1^(i-1): i in [1..deg+1]]: v in Basis(ker)@};
+  assert forall{f: f in fns, i in [1..#ins]|Evaluate(f,ins[i]) eq outs[i]};
+  return fns;
+end function;
+
+function reduce_base(m: min_deg := 1, max_deg := Infinity(), goal_dim := Dimension(Domain(m))-2, pts := RationalPoints(Domain(m)), silent := false, test := true)
+  deg := min_deg;
+  // eqs := AllDefiningPolynomials(m);
+  // bs := Scheme(Domain(m),&cat eqs);
+  eqs := [];
+  bs := Domain(m);
+  while Dimension(bs) gt goal_dim do
+    goodeqs,newmaps := interpolate_map(m,deg,pts: silent := silent, test := test);
+    if not silent then "found", #newmaps, "set(s) of equations in degree", deg; end if;
+    for n in newmaps do
+      if BaseScheme(n) meet bs ne bs then
+	Append(~eqs,DefiningPolynomials(n));
+	if not silent then printf "+"; end if;
+	bs meet:= BaseScheme(n);
+      else if not silent then printf "."; end if;
+      end if;
+    end for;
+    if not silent then printf "\n"; end if;
+    deg +:= 1;
+    error if deg gt max_deg, "failed to reduce base scheme sufficiently";
+  end while;
+  newmap := map<Domain(m)->test select Codomain(m) else AmbientSpace(Codomain(m))|eqs: Check := test>;
+  return newmap;
+end function;
+
+function drop_extra(m:verbose := false)
+  bs := Domain(m);
+  keep := [];
+  if verbose then
+    printf "considering %o sets of equations ", #AllDefiningPolynomials(m);
+  end if;
+  for i in Sort(AllDefiningPolynomials(m),func<x,y|Degree(x[1])-Degree(y[1])>) do
+    if Scheme(bs,i) ne bs then Append(~keep,i); bs := Scheme(bs,i); end if;
+    if verbose then printf "."; end if;
+  end for;
+  if verbose then printf "."; end if;
+  m := map<Domain(m)->Codomain(m)|keep>;
+  return m;
+end function;
+
+function apply_map(m,v)
+  eqs := rep{s: s in AllDefiningPolynomials(m)|Scheme(v,s) ne v};
+  im := map<Domain(m)->Codomain(m)|eqs>(Domain(m) meet v);
+  return im;
+end function;
+
+// list is a list of elements of F_p for various p
+function recover_rat(list)
+  rs := [sub<RSpace(Z,2)|[p,0],[0,p],[Z!l,1] where p is #Parent(l)>: l in list];
+  lat := LatticeWithBasis(Matrix(Basis(&meet rs)));
+  sv := ShortestVectors(lat)[1];
+  r := sv[1]/sv[2];
+  badp := {@#Parent(l): l in list|Valuation(sv[2],#Parent(l)) gt 0 or Parent(l)!r ne l@};
+  return r, badp;
+end function;

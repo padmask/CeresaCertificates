@@ -1,0 +1,586 @@
+Magma V2.25-7     Wed Aug  7 2024 00:09:42 on ottawa   [Seed = 2371426393]
+Type ? for help.  Type <Ctrl>-D to quit.
+
+Loading startup file "/home/adamlogan/magma/startup"
+
+process ID:  13535
+Loading "/usr/local/magma/libs/galpols/galpols"
+Loading "torsion-order.mag"
+Loading "bound.mag"
+Loading "curves-ht-1.mag"
+lower bound for curve 1 is 2
+could be torsion for curve  1
+lower bound for curve 105 is 9
+failure of divisibility at 5 with lower bound of 9 and upper bound of 48
+lower bound for curve 3178 is 12
+failure of divisibility at 11 with lower bound of 12 and upper bound of 30
+lower bound for curve 4575 is 2
+could be torsion for curve  4575
+lower bound for curve 6486 is 36
+failure of divisibility at 29 with lower bound of 4 and upper bound of 90
+lower bound for curve 7643 is 144
+failure of divisibility at 41 with lower bound of 18 and upper bound of 16
+lower bound for curve 8568 is 360
+failure of divisibility at 31 with lower bound of 10 and upper bound of 144
+lower bound for curve 8874 is 2
+could be torsion for curve  8874
+lower bound for curve 8923 is 840
+failure of divisibility at 47 with lower bound of 56 and upper bound of 2880
+lower bound for curve 10581 is 48
+failure of divisibility at 41 with lower bound of 24 and upper bound of 128
+lower bound for curve 42902 is 2
+could be torsion for curve  42902
+lower bound for curve 43455 is 12
+failure of divisibility at 11 with lower bound of 3 and upper bound of 16
+lower bound for curve 45312 is 4
+could be torsion for curve  45312
+lower bound for curve 45320 is 6
+could be torsion for curve  45320
+lower bound for curve 46539 is 168
+failure of divisibility at 53 with lower bound of 7 and upper bound of 6144
+lower bound for curve 46543 is 126
+failure of divisibility at 41 with lower bound of 14 and upper bound of 54
+lower bound for curve 47586 is 30
+failure of divisibility at 29 with lower bound of 10 and upper bound of 1728
+lower bound for curve 65225 is 108
+failure of divisibility at 31 with lower bound of 27 and upper bound of 1152
+lower bound for curve 65592 is 240
+failure of divisibility at 59 with lower bound of 30 and upper bound of 20736
+lower bound for curve 77220 is 2
+could be torsion for curve  77220
+lower bound for curve 78957 is 30
+failure of divisibility at 31 with lower bound of 5 and upper bound of 24
+lower bound for curve 78976 is 72
+failure of divisibility at 13 with lower bound of 9 and upper bound of 24
+lower bound for curve 80606 is 7
+failure of divisibility at 7 with lower bound of 7 and upper bound of 648
+lower bound for curve 80834 is 1360
+failure of divisibility at 41 with lower bound of 34 and upper bound of 640
+lower bound for curve 83612 is 30
+failure of divisibility at 11 with lower bound of 10 and upper bound of 1152
+lower bound for curve 104116 is 10
+failure of divisibility at 11 with lower bound of 5 and upper bound of 2
+lower bound for curve 113700 is 30
+failure of divisibility at 13 with lower bound of 10 and upper bound of 384
+lower bound for curve 114754 is 48
+failure of divisibility at 37 with lower bound of 48 and upper bound of 640
+lower bound for curve 114771 is 120
+failure of divisibility at 31 with lower bound of 5 and upper bound of 24
+lower bound for curve 115593 is 6
+failure of divisibility at 5 with lower bound of 3 and upper bound of 8
+lower bound for curve 128136 is 2
+could be torsion for curve  128136
+lower bound for curve 129657 is 36
+failure of divisibility at 13 with lower bound of 18 and upper bound of 24
+lower bound for curve 130770 is 72
+failure of divisibility at 11 with lower bound of 24 and upper bound of 4374
+lower bound for curve 135971 is 240
+failure of divisibility at 23 with lower bound of 30 and upper bound of 384
+lower bound for curve 142594 is 2
+could be torsion for curve  142594
+lower bound for curve 143835 is 6
+failure of divisibility at 13 with lower bound of 3 and upper bound of 32
+lower bound for curve 143839 is 5
+failure of divisibility at 5 with lower bound of 5 and upper bound of 288
+lower bound for curve 146872 is 30
+failure of divisibility at 11 with lower bound of 15 and upper bound of 1152
+lower bound for curve 147524 is 180
+failure of divisibility at 31 with lower bound of 4 and upper bound of 90
+lower bound for curve 156913 is 2
+could be torsion for curve  156913
+lower bound for curve 157405 is 4
+failure of divisibility at 3 with lower bound of 4 and upper bound of 2
+lower bound for curve 158346 is 24
+failure of divisibility at 17 with lower bound of 24 and upper bound of 1458
+lower bound for curve 159006 is 2
+could be torsion for curve  159006
+lower bound for curve 160171 is 90
+failure of divisibility at 29 with lower bound of 30 and upper bound of 1728
+lower bound for curve 162397 is 2
+could be torsion for curve  162397
+lower bound for curve 162421 is 2
+could be torsion for curve  162421
+lower bound for curve 162435 is 2
+could be torsion for curve  162435
+lower bound for curve 165748 is 2
+could be torsion for curve  165748
+lower bound for curve 166732 is 560
+failure of divisibility at 37 with lower bound of 14 and upper bound of 2560
+lower bound for curve 167619 is 2
+could be torsion for curve  167619
+lower bound for curve 169779 is 6
+failure of divisibility at 5 with lower bound of 6 and upper bound of 256
+lower bound for curve 170041 is 2
+could be torsion for curve  170041
+lower bound for curve 173861 is 180
+failure of divisibility at 31 with lower bound of 5 and upper bound of 216
+lower bound for curve 179098 is 48
+failure of divisibility at 31 with lower bound of 12 and upper bound of 128
+lower bound for curve 187924 is 7
+failure of divisibility at 7 with lower bound of 7 and upper bound of 8
+lower bound for curve 193665 is 2
+could be torsion for curve  193665
+lower bound for curve 193666 is 2
+could be torsion for curve  193666
+lower bound for curve 193720 is 3
+failure of divisibility at 7 with lower bound of 3 and upper bound of 40
+lower bound for curve 193795 is 2
+could be torsion for curve  193795
+lower bound for curve 193804 is 12
+failure of divisibility at 53 with lower bound of 6 and upper bound of 1024
+lower bound for curve 193918 is 2
+could be torsion for curve  193918
+lower bound for curve 193919 is 2
+could be torsion for curve  193919
+lower bound for curve 193954 is 378
+failure of divisibility at 53 with lower bound of 63 and upper bound of 3456
+lower bound for curve 196057 is 72
+failure of divisibility at 31 with lower bound of 36 and upper bound of 768
+lower bound for curve 196093 is 60
+failure of divisibility at 23 with lower bound of 10 and upper bound of 72
+lower bound for curve 196295 is 816
+failure of divisibility at 31 with lower bound of 34 and upper bound of 11520
+lower bound for curve 196319 is 24
+failure of divisibility at 37 with lower bound of 12 and upper bound of 512
+lower bound for curve 196337 is 756
+failure of divisibility at 53 with lower bound of 7 and upper bound of 1944
+lower bound for curve 197007 is 2
+could be torsion for curve  197007
+lower bound for curve 197008 is 2
+could be torsion for curve  197008
+lower bound for curve 197035 is 378
+failure of divisibility at 53 with lower bound of 63 and upper bound of 3456
+lower bound for curve 197125 is 2
+could be torsion for curve  197125
+lower bound for curve 197126 is 2
+could be torsion for curve  197126
+lower bound for curve 197252 is 2
+could be torsion for curve  197252
+lower bound for curve 197253 is 2
+could be torsion for curve  197253
+lower bound for curve 197285 is 378
+failure of divisibility at 53 with lower bound of 63 and upper bound of 3456
+lower bound for curve 199555 is 4
+could be torsion for curve  199555
+lower bound for curve 199635 is 36
+failure of divisibility at 11 with lower bound of 4 and upper bound of 4374
+lower bound for curve 199637 is 36
+failure of divisibility at 11 with lower bound of 4 and upper bound of 4374
+lower bound for curve 199639 is 72
+failure of divisibility at 11 with lower bound of 8 and upper bound of 4374
+lower bound for curve 199645 is 18
+failure of divisibility at 23 with lower bound of 18 and upper bound of 1280
+lower bound for curve 199646 is 6
+failure of divisibility at 3 with lower bound of 6 and upper bound of 1280
+lower bound for curve 199680 is 3
+failure of divisibility at 3 with lower bound of 3 and upper bound of 200
+lower bound for curve 199690 is 36
+failure of divisibility at 11 with lower bound of 4 and upper bound of 4374
+lower bound for curve 199693 is 6
+failure of divisibility at 7 with lower bound of 6 and upper bound of 8
+lower bound for curve 199796 is 4
+could be torsion for curve  199796
+lower bound for curve 200384 is 2
+could be torsion for curve  200384
+lower bound for curve 200385 is 2
+could be torsion for curve  200385
+lower bound for curve 200413 is 378
+failure of divisibility at 53 with lower bound of 63 and upper bound of 3456
+lower bound for curve 200486 is 2
+could be torsion for curve  200486
+lower bound for curve 200584 is 2
+could be torsion for curve  200584
+lower bound for curve 200585 is 2
+could be torsion for curve  200585
+lower bound for curve 202578 is 240
+failure of divisibility at 43 with lower bound of 20 and upper bound of 1536
+lower bound for curve 202587 is 756
+failure of divisibility at 53 with lower bound of 7 and upper bound of 1944
+lower bound for curve 202782 is 60
+failure of divisibility at 23 with lower bound of 10 and upper bound of 72
+lower bound for curve 207818 is 78
+failure of divisibility at 13 with lower bound of 26 and upper bound of 144
+lower bound for curve 214099 is 30
+failure of divisibility at 7 with lower bound of 10 and upper bound of 559872
+lower bound for curve 220075 is 3
+failure of divisibility at 3 with lower bound of 3 and upper bound of 163840
+lower bound for curve 221306 is 120
+failure of divisibility at 31 with lower bound of 10 and upper bound of 576
+lower bound for curve 221734 is 80
+failure of divisibility at 31 with lower bound of 40 and upper bound of 4096
+lower bound for curve 221836 is 672
+failure of divisibility at 43 with lower bound of 28 and upper bound of 746496
+lower bound for curve 222347 is 36
+failure of divisibility at 13 with lower bound of 18 and upper bound of 24
+lower bound for curve 222394 is 12
+could be torsion for curve  222394
+lower bound for curve 222396 is 12
+could be torsion for curve  222396
+lower bound for curve 222433 is 6
+failure of divisibility at 23 with lower bound of 6 and upper bound of 32768
+lower bound for curve 222480 is 36
+failure of divisibility at 13 with lower bound of 18 and upper bound of 24
+lower bound for curve 223184 is 108
+failure of divisibility at 23 with lower bound of 12 and upper bound of 4374
+lower bound for curve 223186 is 108
+failure of divisibility at 23 with lower bound of 12 and upper bound of 4374
+lower bound for curve 223188 is 108
+failure of divisibility at 23 with lower bound of 12 and upper bound of 4374
+lower bound for curve 223231 is 288
+failure of divisibility at 47 with lower bound of 32 and upper bound of 4374
+lower bound for curve 223233 is 36
+failure of divisibility at 11 with lower bound of 36 and upper bound of 4374
+lower bound for curve 223235 is 36
+failure of divisibility at 23 with lower bound of 36 and upper bound of 4374
+lower bound for curve 223258 is 216
+failure of divisibility at 23 with lower bound of 24 and upper bound of 4374
+lower bound for curve 223295 is 36
+failure of divisibility at 11 with lower bound of 36 and upper bound of 4374
+lower bound for curve 223825 is 4
+could be torsion for curve  223825
+lower bound for curve 223826 is 10
+failure of divisibility at 11 with lower bound of 10 and upper bound of 256
+lower bound for curve 224338 is 60
+failure of divisibility at 13 with lower bound of 20 and upper bound of 72
+lower bound for curve 224762 is 2220
+failure of divisibility at 37 with lower bound of 74 and upper bound of 1920
+lower bound for curve 225213 is 120
+failure of divisibility at 31 with lower bound of 10 and upper bound of 1728
+lower bound for curve 225629 is 6
+failure of divisibility at 5 with lower bound of 6 and upper bound of 8
+lower bound for curve 226965 is 126
+failure of divisibility at 31 with lower bound of 21 and upper bound of 72
+lower bound for curve 227496 is 12
+failure of divisibility at 13 with lower bound of 12 and upper bound of 810
+lower bound for curve 230483 is 264
+failure of divisibility at 41 with lower bound of 44 and upper bound of 48
+lower bound for curve 234990 is 6
+failure of divisibility at 2 with lower bound of 6 and upper bound of 10
+lower bound for curve 237130 is 2
+could be torsion for curve  237130
+lower bound for curve 237131 is 2
+could be torsion for curve  237131
+lower bound for curve 237206 is 2
+could be torsion for curve  237206
+lower bound for curve 237275 is 2
+could be torsion for curve  237275
+lower bound for curve 237276 is 2
+could be torsion for curve  237276
+lower bound for curve 237484 is 594
+failure of divisibility at 41 with lower bound of 33 and upper bound of 221184
+lower bound for curve 237833 is 120
+failure of divisibility at 17 with lower bound of 6 and upper bound of 200
+lower bound for curve 238042 is 1188
+failure of divisibility at 97 with lower bound of 99 and upper bound of 648
+lower bound for curve 238569 is 2
+could be torsion for curve  238569
+lower bound for curve 238570 is 2
+could be torsion for curve  238570
+lower bound for curve 238626 is 2
+could be torsion for curve  238626
+lower bound for curve 238627 is 2
+could be torsion for curve  238627
+lower bound for curve 238658 is 240
+failure of divisibility at 31 with lower bound of 5 and upper bound of 10368
+lower bound for curve 238689 is 2
+could be torsion for curve  238689
+lower bound for curve 238690 is 2
+could be torsion for curve  238690
+lower bound for curve 238856 is 378
+failure of divisibility at 41 with lower bound of 378 and upper bound of 54
+lower bound for curve 239203 is 3
+failure of divisibility at 3 with lower bound of 3 and upper bound of 8
+lower bound for curve 239225 is 3
+failure of divisibility at 3 with lower bound of 3 and upper bound of 200
+lower bound for curve 239226 is 30
+failure of divisibility at 7 with lower bound of 6 and upper bound of 5000
+lower bound for curve 239887 is 2
+could be torsion for curve  239887
+lower bound for curve 239888 is 2
+could be torsion for curve  239888
+lower bound for curve 239943 is 2
+could be torsion for curve  239943
+lower bound for curve 239996 is 2
+could be torsion for curve  239996
+lower bound for curve 239997 is 2
+could be torsion for curve  239997
+lower bound for curve 240507 is 120
+failure of divisibility at 17 with lower bound of 6 and upper bound of 200
+lower bound for curve 241295 is 4
+failure of divisibility at 7 with lower bound of 4 and upper bound of 2
+lower bound for curve 241355 is 4
+could be torsion for curve  241355
+lower bound for curve 241407 is 12
+failure of divisibility at 11 with lower bound of 12 and upper bound of 162
+lower bound for curve 241445 is 2
+could be torsion for curve  241445
+lower bound for curve 241519 is 2
+could be torsion for curve  241519
+lower bound for curve 241548 is 2
+could be torsion for curve  241548
+lower bound for curve 241552 is 2
+could be torsion for curve  241552
+lower bound for curve 241556 is 2
+could be torsion for curve  241556
+lower bound for curve 241559 is 2
+could be torsion for curve  241559
+lower bound for curve 241562 is 10
+failure of divisibility at 5 with lower bound of 10 and upper bound of 768
+lower bound for curve 241564 is 2
+could be torsion for curve  241564
+lower bound for curve 241568 is 2
+could be torsion for curve  241568
+lower bound for curve 241570 is 2
+could be torsion for curve  241570
+lower bound for curve 241572 is 2
+could be torsion for curve  241572
+lower bound for curve 241573 is 2
+could be torsion for curve  241573
+lower bound for curve 241574 is 2
+could be torsion for curve  241574
+lower bound for curve 241575 is 2
+could be torsion for curve  241575
+lower bound for curve 242825 is 6
+failure of divisibility at 3 with lower bound of 6 and upper bound of 256
+lower bound for curve 242826 is 24
+failure of divisibility at 37 with lower bound of 24 and upper bound of 8192
+lower bound for curve 243991 is 60
+failure of divisibility at 59 with lower bound of 30 and upper bound of 49152
+lower bound for curve 244001 is 12
+failure of divisibility at 19 with lower bound of 12 and upper bound of 512
+lower bound for curve 244010 is 12
+failure of divisibility at 19 with lower bound of 12 and upper bound of 64
+lower bound for curve 244027 is 30
+failure of divisibility at 19 with lower bound of 5 and upper bound of 4608
+lower bound for curve 244294 is 5
+failure of divisibility at 5 with lower bound of 5 and upper bound of 8
+lower bound for curve 244305 is 378
+failure of divisibility at 53 with lower bound of 63 and upper bound of 216
+lower bound for curve 244321 is 2
+could be torsion for curve  244321
+lower bound for curve 244326 is 2
+could be torsion for curve  244326
+lower bound for curve 244327 is 2
+could be torsion for curve  244327
+lower bound for curve 244329 is 2
+could be torsion for curve  244329
+lower bound for curve 244330 is 2
+could be torsion for curve  244330
+lower bound for curve 244332 is 2
+could be torsion for curve  244332
+lower bound for curve 244333 is 2
+could be torsion for curve  244333
+lower bound for curve 244336 is 2
+could be torsion for curve  244336
+lower bound for curve 244340 is 2
+could be torsion for curve  244340
+lower bound for curve 244341 is 2
+could be torsion for curve  244341
+lower bound for curve 244342 is 2
+could be torsion for curve  244342
+lower bound for curve 244643 is 72
+failure of divisibility at 11 with lower bound of 8 and upper bound of 13122
+lower bound for curve 244644 is 36
+failure of divisibility at 11 with lower bound of 4 and upper bound of 54
+lower bound for curve 244670 is 72
+failure of divisibility at 41 with lower bound of 18 and upper bound of 48
+lower bound for curve 244671 is 72
+failure of divisibility at 11 with lower bound of 8 and upper bound of 13122
+lower bound for curve 244676 is 72
+failure of divisibility at 41 with lower bound of 18 and upper bound of 48
+lower bound for curve 244818 is 2
+could be torsion for curve  244818
+lower bound for curve 244833 is 10
+failure of divisibility at 5 with lower bound of 10 and upper bound of 768
+lower bound for curve 244869 is 2
+could be torsion for curve  244869
+lower bound for curve 244870 is 2
+could be torsion for curve  244870
+lower bound for curve 244893 is 210
+failure of divisibility at 37 with lower bound of 42 and upper bound of 240
+lower bound for curve 244909 is 2
+could be torsion for curve  244909
+lower bound for curve 244910 is 2
+could be torsion for curve  244910
+lower bound for curve 244912 is 2
+could be torsion for curve  244912
+lower bound for curve 244913 is 2
+could be torsion for curve  244913
+lower bound for curve 244918 is 342
+failure of divisibility at 19 with lower bound of 19 and upper bound of 144
+lower bound for curve 244925 is 2
+could be torsion for curve  244925
+lower bound for curve 244926 is 2
+could be torsion for curve  244926
+lower bound for curve 244928 is 2
+could be torsion for curve  244928
+lower bound for curve 244929 is 2
+could be torsion for curve  244929
+lower bound for curve 244931 is 2
+could be torsion for curve  244931
+lower bound for curve 245375 is 2
+could be torsion for curve  245375
+lower bound for curve 245419 is 2
+could be torsion for curve  245419
+lower bound for curve 245447 is 2
+could be torsion for curve  245447
+lower bound for curve 245450 is 24
+failure of divisibility at 37 with lower bound of 24 and upper bound of 256
+lower bound for curve 245452 is 6
+failure of divisibility at 3 with lower bound of 6 and upper bound of 256
+lower bound for curve 245456 is 2
+could be torsion for curve  245456
+lower bound for curve 245457 is 2
+could be torsion for curve  245457
+lower bound for curve 245459 is 2
+could be torsion for curve  245459
+lower bound for curve 245740 is 2
+could be torsion for curve  245740
+lower bound for curve 245743 is 2
+could be torsion for curve  245743
+lower bound for curve 245746 is 360
+failure of divisibility at 53 with lower bound of 15 and upper bound of 1152
+lower bound for curve 245787 is 2
+could be torsion for curve  245787
+lower bound for curve 245790 is 2
+could be torsion for curve  245790
+lower bound for curve 245964 is 2
+could be torsion for curve  245964
+lower bound for curve 246026 is 2
+could be torsion for curve  246026
+lower bound for curve 246030 is 2
+could be torsion for curve  246030
+lower bound for curve 246032 is 2
+could be torsion for curve  246032
+lower bound for curve 246035 is 2
+could be torsion for curve  246035
+lower bound for curve 246038 is 2
+could be torsion for curve  246038
+lower bound for curve 246041 is 2
+could be torsion for curve  246041
+lower bound for curve 246043 is 2
+could be torsion for curve  246043
+lower bound for curve 246044 is 2
+could be torsion for curve  246044
+lower bound for curve 246045 is 2
+could be torsion for curve  246045
+lower bound for curve 246046 is 2
+could be torsion for curve  246046
+lower bound for curve 247009 is 6
+failure of divisibility at 3 with lower bound of 6 and upper bound of 256
+lower bound for curve 247019 is 24
+failure of divisibility at 37 with lower bound of 24 and upper bound of 131072
+lower bound for curve 247191 is 46
+failure of divisibility at 37 with lower bound of 23 and upper bound of 256
+lower bound for curve 247210 is 2
+could be torsion for curve  247210
+lower bound for curve 247212 is 6
+could be torsion for curve  247212
+lower bound for curve 247213 is 2
+could be torsion for curve  247213
+lower bound for curve 247222 is 2
+could be torsion for curve  247222
+lower bound for curve 247229 is 6
+could be torsion for curve  247229
+lower bound for curve 247230 is 2
+could be torsion for curve  247230
+lower bound for curve 247231 is 6
+could be torsion for curve  247231
+lower bound for curve 247251 is 4
+failure of divisibility at 19 with lower bound of 4 and upper bound of 2
+lower bound for curve 247260 is 2
+could be torsion for curve  247260
+lower bound for curve 247261 is 2
+could be torsion for curve  247261
+lower bound for curve 247263 is 1
+could be torsion for curve  247263
+lower bound for curve 247264 is 2
+could be torsion for curve  247264
+lower bound for curve 247266 is 30
+failure of divisibility at 11 with lower bound of 3 and upper bound of 1280
+lower bound for curve 247267 is 2
+could be torsion for curve  247267
+lower bound for curve 247269 is 2
+could be torsion for curve  247269
+lower bound for curve 247270 is 6
+failure of divisibility at 3 with lower bound of 6 and upper bound of 1280
+lower bound for curve 247271 is 2
+could be torsion for curve  247271
+lower bound for curve 247693 is 2
+could be torsion for curve  247693
+lower bound for curve 247713 is 2
+could be torsion for curve  247713
+lower bound for curve 248155 is 2
+could be torsion for curve  248155
+lower bound for curve 248179 is 2
+could be torsion for curve  248179
+lower bound for curve 248190 is 2
+could be torsion for curve  248190
+lower bound for curve 248192 is 2
+could be torsion for curve  248192
+lower bound for curve 248194 is 2
+could be torsion for curve  248194
+lower bound for curve 248196 is 2
+could be torsion for curve  248196
+lower bound for curve 248198 is 2
+could be torsion for curve  248198
+lower bound for curve 248199 is 2
+could be torsion for curve  248199
+lower bound for curve 248414 is 6
+failure of divisibility at 3 with lower bound of 6 and upper bound of 256
+lower bound for curve 248421 is 2
+could be torsion for curve  248421
+lower bound for curve 248423 is 2
+could be torsion for curve  248423
+lower bound for curve 248425 is 2
+could be torsion for curve  248425
+lower bound for curve 248434 is 126
+failure of divisibility at 41 with lower bound of 42 and upper bound of 1944
+lower bound for curve 248812 is 1116
+failure of divisibility at 31 with lower bound of 31 and upper bound of 72
+lower bound for curve 248914 is 18
+failure of divisibility at 13 with lower bound of 18 and upper bound of 48
+lower bound for curve 250931 is 84
+failure of divisibility at 31 with lower bound of 28 and upper bound of 48
+lower bound for curve 251890 is 2
+could be torsion for curve  251890
+lower bound for curve 251904 is 2
+could be torsion for curve  251904
+lower bound for curve 252130 is 72
+failure of divisibility at 41 with lower bound of 18 and upper bound of 48
+lower bound for curve 253128 is 72
+failure of divisibility at 23 with lower bound of 24 and upper bound of 162
+lower bound for curve 253546 is 10
+failure of divisibility at 7 with lower bound of 10 and upper bound of 1728
+lower bound for curve 253547 is 2
+could be torsion for curve  253547
+lower bound for curve 253665 is 2
+could be torsion for curve  253665
+lower bound for curve 253807 is 432
+failure of divisibility at 53 with lower bound of 27 and upper bound of 144
+lower bound for curve 254648 is 2
+could be torsion for curve  254648
+lower bound for curve 254663 is 20
+failure of divisibility at 5 with lower bound of 5 and upper bound of 8
+lower bound for curve 254669 is 160
+failure of divisibility at 43 with lower bound of 20 and upper bound of 384
+lower bound for curve 254728 is 10
+failure of divisibility at 7 with lower bound of 10 and upper bound of 24
+lower bound for curve 254792 is 10
+failure of divisibility at 7 with lower bound of 10 and upper bound of 6912
+lower bound for curve 254823 is 24
+failure of divisibility at 41 with lower bound of 6 and upper bound of 2048
+lower bound for curve 254844 is 2
+could be torsion for curve  254844
+lower bound for curve 254876 is 360
+could be torsion for curve  254876
+lower bound for curve 254902 is 6
+could be torsion for curve  254902
+lower bound for curve 254923 is 6
+failure of divisibility at 3 with lower bound of 6 and upper bound of 128
+lower bound for curve 254926 is 30
+failure of divisibility at 17 with lower bound of 10 and upper bound of 864
+lower bound for curve 254935 is 36
+failure of divisibility at 41 with lower bound of 9 and upper bound of 384
+
+Total time: 892479.780 seconds, Total memory usage: 14034.34MB
