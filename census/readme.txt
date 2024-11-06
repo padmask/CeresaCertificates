@@ -6,6 +6,7 @@ census-detail.mag       function for the first pass, using information from prim
 census-to-100.mag       function for the second pass, using information from primes less than 100
 remaining.mag           script to handle the curves that are not excluded by the previous two
 bloch_new.mag           functions to compute the Bloch shadow for semidiagonal curves
+semidiagonal-example.mag one single example that needs the Bloch shadow
 do_invariants.mag       function to determine pairs of curves with the same Dixmier-Ohno invariants
 five.mag                five curves for which the torsion status of the Ceresa cycle is undetermined
 nine.mag                nine curves for which the Ceresa cycle is known to be torsion
