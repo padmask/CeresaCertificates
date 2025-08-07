@@ -13,8 +13,8 @@ Explanation of the Magma source code in each directory
 
 ### Root directory
 
-bound.mag: functions to compute upper bounds for the order of the Ceresa cycle modulo algebraic equivalence, if it is torsion.
-torsion-order.mag: functions to compute upper bounds for the order of the Ceresa cycle modulo algebraic equivalence, if it is torsion.
+bound.mag: functions to compute upper bounds for the order of the Ceresa cycle modulo rational equivalence, if it is torsion.
+torsion-order.mag: functions to compute upper bounds for the order of the Ceresa cycle modulo rational equivalence, if it is torsion.
 
 ### census
 
