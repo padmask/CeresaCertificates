@@ -79,7 +79,7 @@ end function;
 // We may have worked out an upper bound previously, in which case
 // we stop as soon as we know that the two are inconsistent.
 // Second return value: curve could still have torsion Ceresa.
-function check_c(c,pbd: lbd := 1, verbose := false, goal := 0)
+function check_c(c,pbd: lbd := 1, verbose := false, goal := 0, bd := -1)
   lcm := 1;
   ords := [];
   for p in PrimesInInterval(lbd,pbd) do
@@ -87,7 +87,7 @@ function check_c(c,pbd: lbd := 1, verbose := false, goal := 0)
     F := GF(p);                        
     cp := ChangeRing(c,GF(p));
     if IsNonsingular(cp) then
-      cl := ek_class(cp:verbose := verbose);
+      cl := ek_class(cp:verbose := verbose, bd := bd);
       // we have all the classes we will look at
       // now find the group they generate
       scl := sub<Universe(cl)|cl>;
@@ -104,7 +104,7 @@ function check_c(c,pbd: lbd := 1, verbose := false, goal := 0)
 end function;
   
 // same, but over a number field
-function check_c_nf(c,pbd: lbd := 1, verbose := false, goal := 0)
+function check_c_nf(c,pbd: lbd := 1, verbose := false, goal := 0, bd := -1)
   nf := FieldOfFractions(BaseRing(c));
   lcm := 1;
   ords := [];
@@ -115,7 +115,7 @@ function check_c_nf(c,pbd: lbd := 1, verbose := false, goal := 0)
     P2qp := ProjectiveSpace(qp,2);
     cp := Curve(P2qp,&+[rep{r: r in qp|Valuation(MonomialCoefficient(DefiningPolynomial(c),m)-r@@toqp,p) gt 0}*CoordinateRing(P2qp)!m: m in Monomials(DefiningPolynomial(c))]);
     if IsNonsingular(cp) then
-      cl := ek_class(cp:verbose := verbose);
+      cl := ek_class(cp:verbose := verbose, bd := bd);
       // we have all the classes we will look at
       // now find the group they generate
       scl := sub<Universe(cl)|cl>;
