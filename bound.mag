@@ -17,7 +17,7 @@ function easy_bound(pol)
   if LeadingCoefficient(pol) ne 1 then pol := Reverse(pol); end if;
   sf := SplittingField(pol);
   rts := [x[1]: i in [1..x[2]], x in Roots(pol,sf)];
-  prod3 := {*&*[rts[i]: i in s]: s in Subsets({1..6},3)*};
+  prod3 := {*&*[rts[i]: i in s]: s in Subsets({1..Degree(pol)},3)*};
   _,q := IsPower(Coefficient(pol,0),3);
   wedge := {*r*q: r in rts*};
   assert wedge subset prod3;
